@@ -13,7 +13,6 @@ import {
   LogOut,
   Menu,
   X,
-  Leaf,
   UserCog,
   Bell,
   ChevronRight,
@@ -74,14 +73,14 @@ export default function Layout({ children }: LayoutProps) {
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
-          <div className="h-20 flex items-center gap-3 px-5 border-b border-sidebar-border">
-            <div className="w-10 h-10 rounded-lg bg-gradient-kiwi flex items-center justify-center shadow-kiwi">
-              <Leaf className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div className="min-w-0">
-              <span className="font-bold text-lg text-foreground">Kiwi<span className="text-primary">App</span></span>
-              <p className="text-[10px] uppercase text-muted-foreground">Business OS</p>
-            </div>
+          <div className="h-20 flex items-center justify-center px-4 border-b border-sidebar-border">
+            <Link to="/dashboard" className="flex items-center justify-center w-full">
+              <img
+                src="/uploads/ChatGPT_Image_12_de_set._de_2026_18_01_37.png"
+                alt="Logo"
+                className="h-16 w-auto max-w-full object-contain"
+              />
+            </Link>
           </div>
 
           {/* Menu Items */}
