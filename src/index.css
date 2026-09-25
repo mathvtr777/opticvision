@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 12%;
+
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 12%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 42%;
+
+    --accent: 0 80% 96%;
+    --accent-foreground: 0 72% 45%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 72% 51%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 30%;
+    --sidebar-primary: 0 72% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 80% 96%;
+    --sidebar-accent-foreground: 0 72% 45%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 72% 51%;
+
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --info: 194 88% 46%;
+    --info-foreground: 0 0% 100%;
+
+    --gradient-kiwi: linear-gradient(135deg, hsl(0 72% 51%) 0%, hsl(0 80% 62%) 100%);
+    --gradient-subtle: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 55%, hsl(0 70% 97%) 100%);
+    
+    --shadow-soft: 0 1px 0 hsl(0 0% 0% / 0.03), 0 8px 24px hsl(0 40% 40% / 0.08);
+    --shadow-medium: 0 1px 0 hsl(0 0% 0% / 0.04), 0 16px 40px hsl(0 40% 40% / 0.12);
+    --shadow-hard: 0 24px 70px hsl(0 40% 30% / 0.20);
+    --shadow-kiwi: 0 0 24px hsl(0 72% 51% / 0.25);
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 72% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 55% 18%;
+    --accent-foreground: 0 72% 70%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 72% 55%;
+    
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 0 72% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 55% 18%;
+    --sidebar-accent-foreground: 0 72% 70%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 0 72% 55%;
+
+    --success: 145 63% 45%;
+    --success-foreground: 0 0% 10%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 10%;
+    
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 10%;
+
+    --gradient-kiwi: linear-gradient(135deg, hsl(0 72% 55%) 0%, hsl(0 80% 65%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 10%) 0%, hsl(0 65% 12%) 100%);
+    
+    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 4px 16px -4px hsl(0 0% 0% / 0.4);
+    --shadow-hard: 0 8px 24px -6px hsl(0 0% 0% / 0.5);
+    --shadow-kiwi: 0 4px 16px -2px hsl(0 72% 55% / 0.35);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Manrope", sans-serif;
+    letter-spacing: 0;
+    background-image: radial-gradient(circle at 85% -10%, hsl(var(--primary) / 0.08), transparent 28%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 999px;
+  }
+}
