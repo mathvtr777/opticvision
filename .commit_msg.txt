@@ -1,8 +1,5 @@
-feat: Modulo de Laboratorio e Guia de Producao
+fix: Corrige tela em branco no Laboratório e Dashboard status
 
-- Adicionada nova aba `/laboratorio` no menu principal.
-- Implementado listagem de pedidos no Laboratorio com filtros por status, busca unificada e date range.
-- Novo campo `lab_status` (Aguardando Envio, Enviado ao Lab, Em Producao, Recebido, Finalizado) rastreado no pedido.
-- Atualizado Dashboard para incorporar resumo do Laboratorio (cards clicaveis que redirecionam e aplicam filtro).
-- Nova funcionalidade para preenchimento de `lab_status` na edicao do Pedido (`OrderDetail.tsx`).
-- Modulo de impressao `LabGuidePrint.tsx` que gera layout clean em formato A4, com todos os dados da producao, ocultando elementos administrativos e exibindo corretamente os dados opticos, observacoes e identificacao da otica. Acesso direto pela listagem do Laboratorio atraves do botao "Guia".
+- Importação do componente `Label` em `Laboratory.tsx` que estava faltando, causando uma quebra de renderização na aba de pesquisa.
+- Tratamento para pedidos sem data de criação em `Laboratory.tsx`.
+- Corrige contagem de pedidos no `Dashboard.tsx` para utilizar e puxar `lab_status` do banco, evitando contagem zerada/incorreta das métricas do laboratório.

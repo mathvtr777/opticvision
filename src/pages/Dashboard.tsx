@@ -79,13 +79,13 @@ export default function Dashboard() {
     try {
       const { data: orders } = await supabase
         .from("orders")
-        .select("status, estimated_delivery");
+        .select("status, lab_status, estimated_delivery");
 
       if (orders) {
         setOrderStats({
-          awaiting_shipment: orders.filter(o => o.status === "awaiting_shipment").length,
-          in_production: orders.filter(o => o.status === "in_production").length,
-          received: orders.filter(o => o.status === "received").length,
+          awaiting_shipment: orders.filter(o => (o.lab_status || "awaiting_shipment") === "awaiting_shipment").length,
+          in_production: orders.filter(o => o.lab_status === "in_production").length,
+          received: orders.filter(o => o.lab_status === "received").length,
           ready: orders.filter(o => o.status === "ready").length,
           late: orders.filter(o =>
             o.estimated_delivery && o.estimated_delivery < today && o.status !== "delivered"

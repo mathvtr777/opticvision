@@ -12,7 +12,7 @@ import {
   FlaskConical, Search, FileText, ChevronRight, CheckCircle2,
   AlertCircle, Eye, Printer, Download, Truck, Package, Clock
 } from "lucide-react";
-import { STATUS_CONFIG } from "./Orders";
+import { Label } from "@/components/ui/label";
 
 // ── Status configuration (Lab specific) ────────────────────────────────────
 export const LAB_STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
@@ -84,12 +84,14 @@ export default function Laboratory() {
 
       // Date Range
       let matchDate = true;
-      const orderDate = new Date(o.created_at.split("T")[0]);
-      if (startDate) {
-        matchDate = matchDate && orderDate >= new Date(startDate);
-      }
-      if (endDate) {
-        matchDate = matchDate && orderDate <= new Date(endDate);
+      if (o.created_at) {
+        const orderDate = new Date(o.created_at.split("T")[0]);
+        if (startDate) {
+          matchDate = matchDate && orderDate >= new Date(startDate);
+        }
+        if (endDate) {
+          matchDate = matchDate && orderDate <= new Date(endDate);
+        }
       }
 
       return matchSearch && matchStatus && matchDate;
@@ -233,7 +235,7 @@ export default function Laboratory() {
                           {order.clients?.name || "—"}
                         </td>
                         <td className="px-4 py-3">
-                          {formatDate(order.created_at.split("T")[0])}
+                          {order.created_at ? formatDate(order.created_at.split("T")[0]) : "—"}
                         </td>
                         <td className="px-4 py-3">
                           {order.lens_type || "—"}
