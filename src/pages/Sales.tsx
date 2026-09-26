@@ -438,7 +438,7 @@ export default function Sales() {
                       <SelectContent>
                         {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                           <SelectItem key={n} value={String(n)}>
-                            {n}x {n > 1 && total > 0 ? `— R$ ${(total / n).toFixed(2)}/parcela` : ""}
+                            {n}x {n > 1 && finalTotal > 0 ? `— R$ ${(finalTotal / n).toFixed(2)}/parcela` : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>

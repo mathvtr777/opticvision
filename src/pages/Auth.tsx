@@ -70,10 +70,13 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
       <Card className="w-full max-w-md shadow-hard border-border/50">
         <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex items-center justify-center">
-            <span className="text-4xl font-black tracking-tighter text-foreground py-6">
-              Simply
-            </span>
+          <div className="mx-auto flex items-center justify-center py-4">
+            <img
+              src="/simply-logo.png"
+              alt="Simply"
+              className="h-24 w-auto object-contain"
+              style={{ mixBlendMode: "multiply" }}
+            />
           </div>
           <CardDescription className="text-base">
             {isLogin ? "Entre na sua conta" : "Crie sua conta gratuitamente"}
