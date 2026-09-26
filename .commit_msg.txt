@@ -1,7 +1,10 @@
-feat: adicionar acompanhamento publico do pedido
+feat: dados opticos, valor manual da venda e observacoes
 
-- Nova migracao SQL para adicionar `public_tracking_token` e policies RLS publicas (sem auth).
-- Nova pagina de acompanhamento publico (`TrackingPage.tsx`), otimizada para mobile e sem dados sensiveis.
-- Rota publica adicionada (`/pedido/:token`) em `App.tsx`.
-- Refatoracao de `OrderDetail.tsx` para incluir botao de compartilhar e logica de geracao de token (12 chars base36) vinculada ao pedido existente.
-- Modal de compartilhamento com possibilidade de copiar link, enviar no WhatsApp e visualizar previa.
+- Nova tabela para auditoria de ajuste de preco e novas colunas para dados opticos (clients/orders) e observacoes e descontos (sales).
+- Adicionada a aba de DADOS OPTICOS no cadastro/edicao de Clientes (DNP, Altura Pupilar OD/OE, Tipo de Lente).
+- Refatorado a pagina de Vendas (`Sales.tsx`) para puxar dados opticos automaticamente e passar a orders ao fechar a venda.
+- Inclusao de Observacoes da Venda em `Sales.tsx` (salvas em `sales` e repassadas a `orders`).
+- Implementado recurso para alterar o valor manual calculado da venda: botao "Alterar Valor", substituicao do preco total e repasse ao Financeiro.
+- `OrderDetail.tsx` agora inclui os Dados Opticos no modulo Laboratorio.
+- A Guia do Laboratorio (`handleGeneratePDF` em `OrderDetail`) tambem agora imprime essas novidades visuais e Observacoes da venda de maneira separada.
+- Relatorios (`Reports.tsx`) e Dashboard (`Dashboard.tsx`) naturalmente integrados com o "finalTotal" mantendo consistencia da auditoria.

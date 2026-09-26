@@ -15,6 +15,11 @@ const emptyForm = {
   email: "",
   telefone: "",
   observacoes: "",
+  dnp_od: "",
+  dnp_oe: "",
+  pupillary_height_od: "",
+  pupillary_height_oe: "",
+  lens_type: "",
 };
 
 const emptyReceita = {
@@ -99,6 +104,11 @@ export default function Clients() {
         email: formData.email || null,
         phone: formData.telefone || null,
         notes: formData.observacoes || null,
+        dnp_od: formData.dnp_od ? parseFloat(formData.dnp_od.replace(',', '.')) : null,
+        dnp_oe: formData.dnp_oe ? parseFloat(formData.dnp_oe.replace(',', '.')) : null,
+        pupillary_height_od: formData.pupillary_height_od ? parseFloat(formData.pupillary_height_od.replace(',', '.')) : null,
+        pupillary_height_oe: formData.pupillary_height_oe ? parseFloat(formData.pupillary_height_oe.replace(',', '.')) : null,
+        lens_type: formData.lens_type || null,
       };
 
       if (editingId) {
@@ -174,6 +184,11 @@ export default function Clients() {
       email: client.email || "",
       telefone: client.phone || client.telefone || "",
       observacoes: client.notes || client.observacoes || "",
+      dnp_od: client.dnp_od ? String(client.dnp_od) : "",
+      dnp_oe: client.dnp_oe ? String(client.dnp_oe) : "",
+      pupillary_height_od: client.pupillary_height_od ? String(client.pupillary_height_od) : "",
+      pupillary_height_oe: client.pupillary_height_oe ? String(client.pupillary_height_oe) : "",
+      lens_type: client.lens_type || "",
     });
     setReceita({ ...emptyReceita });
     setReceitaFile(null);
@@ -268,6 +283,65 @@ export default function Clients() {
                     onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                     rows={3}
                   />
+                </div>
+
+                <div className="space-y-4 rounded-lg border border-border/50 p-4 bg-muted/10">
+                  <h3 className="font-semibold text-sm">DADOS ÓPTICOS</h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground uppercase">DNP</Label>
+                      <div className="flex gap-3">
+                        <div className="flex-1 space-y-1">
+                          <Label className="text-xs">OD (mm)</Label>
+                          <Input
+                            placeholder="Ex: 31"
+                            value={formData.dnp_od}
+                            onChange={(e) => setFormData({ ...formData, dnp_od: e.target.value })}
+                          />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <Label className="text-xs">OE (mm)</Label>
+                          <Input
+                            placeholder="Ex: 32"
+                            value={formData.dnp_oe}
+                            onChange={(e) => setFormData({ ...formData, dnp_oe: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground uppercase">Altura Pupilar</Label>
+                      <div className="flex gap-3">
+                        <div className="flex-1 space-y-1">
+                          <Label className="text-xs">OD (mm)</Label>
+                          <Input
+                            placeholder="Ex: 18"
+                            value={formData.pupillary_height_od}
+                            onChange={(e) => setFormData({ ...formData, pupillary_height_od: e.target.value })}
+                          />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <Label className="text-xs">OE (mm)</Label>
+                          <Input
+                            placeholder="Ex: 19"
+                            value={formData.pupillary_height_oe}
+                            onChange={(e) => setFormData({ ...formData, pupillary_height_oe: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground uppercase">Tipo de Lente</Label>
+                    <Input
+                      placeholder="Ex: Multifocal, Monofocal, Blue Control..."
+                      value={formData.lens_type}
+                      onChange={(e) => setFormData({ ...formData, lens_type: e.target.value })}
+                    />
+                  </div>
                 </div>
 
                 {!editingId && (

@@ -83,6 +83,11 @@ interface Order {
   laboratories: { id: string; name: string; phone: string | null } | null;
   order_status_history: StatusHistory[];
   public_tracking_token: string | null;
+  dnp_od: number | null;
+  dnp_oe: number | null;
+  pupillary_height_od: number | null;
+  pupillary_height_oe: number | null;
+  lens_type: string | null;
 }
 
 const formatCurrency = (v: number) =>
@@ -479,6 +484,21 @@ export default function OrderDetail() {
           <div class="row"><span class="label">Previsão de entrega</span><span>${formatDate(order.estimated_delivery)}</span></div>
           <div class="row"><span class="label">Status</span><span class="status">${STATUS_CONFIG[order.status]?.label || order.status}</span></div>
         </div>
+
+        ${order.lens_type || order.dnp_od || order.dnp_oe || order.pupillary_height_od || order.pupillary_height_oe ? `
+        <div class="section">
+          <h2>Dados da Lente</h2>
+          ${order.lens_type ? `<div style="margin-bottom:8px;"><span class="label" style="display:block;margin-bottom:2px;">Tipo de lente:</span><strong>${order.lens_type}</strong></div>` : ""}
+          
+          <table style="margin-top:0;">
+            <thead><tr><th>Medida</th><th>Olho Direito (OD)</th><th>Olho Esquerdo (OE)</th></tr></thead>
+            <tbody>
+              ${order.dnp_od || order.dnp_oe ? `<tr><td>DNP</td><td>${order.dnp_od ? order.dnp_od + " mm" : "—"}</td><td>${order.dnp_oe ? order.dnp_oe + " mm" : "—"}</td></tr>` : ""}
+              ${order.pupillary_height_od || order.pupillary_height_oe ? `<tr><td>Altura Pupilar</td><td>${order.pupillary_height_od ? order.pupillary_height_od + " mm" : "—"}</td><td>${order.pupillary_height_oe ? order.pupillary_height_oe + " mm" : "—"}</td></tr>` : ""}
+            </tbody>
+          </table>
+        </div>
+        ` : ""}
         <div class="section">
           <h2>Produtos</h2>
           <table><thead><tr><th>Produto</th><th>Qtd</th><th>Valor unit.</th><th>Subtotal</th></tr></thead>
@@ -491,6 +511,14 @@ export default function OrderDetail() {
           <div class="row"><span class="label">N° da ordem</span><span>${order.lab_order_number || "—"}</span></div>
           <div class="row"><span class="label">Previsão lab.</span><span>${formatDate(order.lab_estimated_delivery)}</span></div>
         </div>
+
+        ${order.notes || order.lab_notes ? `
+        <div class="section">
+          <h2>Observações</h2>
+          ${order.notes ? `<p style="font-size:12px;margin:4px 0;"><strong>Venda/Pedido:</strong> ${order.notes}</p>` : ""}
+          ${order.lab_notes ? `<p style="font-size:12px;margin:4px 0;"><strong>Laboratório:</strong> ${order.lab_notes}</p>` : ""}
+        </div>
+        ` : ""}
         <div class="section">
           <h2>Financeiro</h2>
           <div class="row"><span class="label">Total</span><span>${formatCurrency(total)}</span></div>
@@ -772,6 +800,43 @@ export default function OrderDetail() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Optical Data (Dados Ópticos) */}
+            {(order.lens_type || order.dnp_od || order.dnp_oe || order.pupillary_height_od || order.pupillary_height_oe) && (
+              <Card className="border-border/50 shadow-medium">
+                <CardHeader><CardTitle className="text-base flex items-center gap-2"><User className="w-4 h-4 text-primary" />Dados Ópticos</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {order.lens_type && (
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase">Tipo de Lente</p>
+                        <p className="font-semibold text-sm">{order.lens_type}</p>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      {(order.dnp_od || order.dnp_oe) && (
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase mb-1">DNP</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-sm"><span>OD:</span><span className="font-medium">{order.dnp_od ? `${order.dnp_od} mm` : "—"}</span></div>
+                            <div className="flex justify-between text-sm"><span>OE:</span><span className="font-medium">{order.dnp_oe ? `${order.dnp_oe} mm` : "—"}</span></div>
+                          </div>
+                        </div>
+                      )}
+                      {(order.pupillary_height_od || order.pupillary_height_oe) && (
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase mb-1">Altura Pupilar</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-sm"><span>OD:</span><span className="font-medium">{order.pupillary_height_od ? `${order.pupillary_height_od} mm` : "—"}</span></div>
+                            <div className="flex justify-between text-sm"><span>OE:</span><span className="font-medium">{order.pupillary_height_oe ? `${order.pupillary_height_oe} mm` : "—"}</span></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Optical Prescription */}
             {receita && (

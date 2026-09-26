@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, ShoppingCart, Trash2, AlertCircle } from "lucide-react";
+import { Plus, ShoppingCart, Trash2, AlertCircle, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SaleItem {
   product_id: string;
@@ -34,10 +35,16 @@ export default function Sales() {
   const [installments, setInstallments] = useState("1");
   const [paymentType, setPaymentType] = useState<"full" | "partial">("full");
   const [paidAmount, setPaidAmount] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [finalAmountInput, setFinalAmountInput] = useState("");
 
-  const total = saleItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const originalTotal = saleItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const finalTotal = isEditingPrice && finalAmountInput !== "" ? parseFloat(finalAmountInput) || 0 : originalTotal;
+  const discountAmount = originalTotal - finalTotal;
+
   const paidAmountNum = parseFloat(paidAmount) || 0;
-  const remainingAmount = paymentType === "partial" ? Math.max(0, total - paidAmountNum) : 0;
+  const remainingAmount = paymentType === "partial" ? Math.max(0, finalTotal - paidAmountNum) : 0;
 
   const showInstallments = paymentMethod === "credit";
   const showPaymentType = paymentMethod === "cash" || paymentMethod === "pix";
@@ -51,15 +58,15 @@ export default function Sales() {
   // Sync paidAmount to full amount when switching to full
   useEffect(() => {
     if (paymentType === "full") {
-      setPaidAmount(total > 0 ? total.toFixed(2) : "");
+      setPaidAmount(finalTotal > 0 ? finalTotal.toFixed(2) : "");
     }
-  }, [paymentType, total]);
+  }, [paymentType, finalTotal]);
 
   // Reset payment-specific fields when method changes
   useEffect(() => {
     setPaymentType("full");
     setInstallments("1");
-    setPaidAmount(total > 0 ? total.toFixed(2) : "");
+    setPaidAmount(finalTotal > 0 ? finalTotal.toFixed(2) : "");
   }, [paymentMethod]);
 
   const checkAuth = async () => {
@@ -146,8 +153,8 @@ export default function Sales() {
         toast.error("Informe o valor pago.");
         return false;
       }
-      if (paidAmountNum > total) {
-        toast.error("O valor pago não pode ser maior que o total da venda.");
+      if (paidAmountNum > finalTotal) {
+        toast.error("O valor pago não pode ser maior que o total final da venda.");
         return false;
       }
     }
@@ -163,7 +170,7 @@ export default function Sales() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
-      const totalAmount = total;
+      const totalAmount = finalTotal;
       const effectivePaid = showPartialFields ? paidAmountNum : totalAmount;
       const isPartial = showPartialFields && paidAmountNum < totalAmount;
       const paymentStatus = isPartial ? "partial" : "paid";
@@ -185,6 +192,9 @@ export default function Sales() {
           client_id: clientId || null,
           seller_name: sellerName,
           total_amount: totalAmount,
+          original_amount: originalTotal,
+          discount_amount: discountAmount,
+          notes: notes || null,
           payment_method: finalPaymentMethod,
           payment_status: paymentStatus,
           paid_amount: effectivePaid,
@@ -207,6 +217,18 @@ export default function Sales() {
         }))
       );
       if (itemsError) throw itemsError;
+
+      // Se houve ajuste manual de preço, registrar na auditoria
+      if (isEditingPrice && discountAmount !== 0) {
+        await supabase.from("sale_price_adjustments").insert([{
+          sale_id: sale.id,
+          user_id: user.id,
+          user_name: user.user_metadata?.name || user.email || "Usuário",
+          original_amount: originalTotal,
+          final_amount: finalTotal,
+          difference: -discountAmount, // se original=1200, final=1100, difference=-100
+        }]);
+      }
 
       // Register initial payment in sale_payments
       const today = new Date().toISOString().split("T")[0];
@@ -256,6 +278,20 @@ export default function Sales() {
 
       // Auto-criar pedido vinculado à venda
       try {
+        let orderOpticalData = {};
+        if (clientId) {
+          const clientData = clients.find((c) => c.id === clientId);
+          if (clientData) {
+            orderOpticalData = {
+              dnp_od: clientData.dnp_od,
+              dnp_oe: clientData.dnp_oe,
+              pupillary_height_od: clientData.pupillary_height_od,
+              pupillary_height_oe: clientData.pupillary_height_oe,
+              lens_type: clientData.lens_type,
+            };
+          }
+        }
+
         const { data: createdOrder, error: orderErr } = await supabase
           .from("orders")
           .insert([{
@@ -264,6 +300,10 @@ export default function Sales() {
             client_id: clientId || null,
             seller_name: sellerName,
             status: "sale_created",
+            notes: notes || null,
+            original_amount: originalTotal,
+            final_amount: finalTotal,
+            ...orderOpticalData,
           }])
           .select("id")
           .single();
@@ -359,6 +399,17 @@ export default function Sales() {
                 </div>
               </div>
 
+              {/* Observações */}
+              <div className="space-y-2">
+                <Label>Observações da Venda</Label>
+                <Textarea
+                  placeholder="Ex: Cliente solicitou entrega até sexta-feira."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                />
+              </div>
+
               {/* Forma de Pagamento */}
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -392,9 +443,9 @@ export default function Sales() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {total > 0 && (
+                    {finalTotal > 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Total: {formatCurrency(total)} em {installments}x de {formatCurrency(total / parseInt(installments))}
+                        Total: {formatCurrency(finalTotal)} em {installments}x de {formatCurrency(finalTotal / parseInt(installments))}
                       </p>
                     )}
                   </div>
@@ -440,7 +491,7 @@ export default function Sales() {
                           <div className="relative">
                             <Input
                               id="valor-total"
-                              value={total > 0 ? formatCurrency(total) : "R$ 0,00"}
+                              value={finalTotal > 0 ? formatCurrency(finalTotal) : "R$ 0,00"}
                               readOnly
                               className="bg-muted/50 font-bold"
                             />
@@ -453,7 +504,7 @@ export default function Sales() {
                             type="number"
                             step="0.01"
                             min="0.01"
-                            max={total}
+                            max={finalTotal}
                             value={paidAmount}
                             onChange={(e) => setPaidAmount(e.target.value)}
                             placeholder="0,00"
@@ -562,10 +613,48 @@ export default function Sales() {
                   ))}
 
                   {/* Resumo do pagamento */}
-                  <div className="p-4 bg-primary/10 rounded-lg border-2 border-primary/20 space-y-2">
+                  <div className="p-4 bg-primary/10 rounded-lg border-2 border-primary/20 space-y-4">
                     <div className="flex items-center justify-between">
-                      <p className="font-bold text-lg">Total da Venda</p>
-                      <p className="font-bold text-2xl text-primary">{formatCurrency(total)}</p>
+                      <p className="font-bold text-lg">Valor Original Calculado</p>
+                      <p className="font-bold text-lg text-muted-foreground line-through decoration-muted-foreground/50">{formatCurrency(originalTotal)}</p>
+                    </div>
+
+                    {isEditingPrice ? (
+                      <div className="flex items-center gap-2 justify-end bg-background p-2 rounded-md border border-border">
+                        <Label>Valor final da venda:</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          className="w-32 font-bold"
+                          value={finalAmountInput}
+                          onChange={(e) => setFinalAmountInput(e.target.value)}
+                          placeholder={originalTotal.toFixed(2)}
+                        />
+                        <Button type="button" variant="ghost" size="icon" onClick={() => { setIsEditingPrice(false); setFinalAmountInput(""); }}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end">
+                        <Button type="button" variant="outline" size="sm" onClick={() => { setIsEditingPrice(true); setFinalAmountInput(originalTotal.toFixed(2)); }}>
+                          <Pencil className="w-3 h-3 mr-1" />
+                          Alterar valor
+                        </Button>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between border-t border-primary/20 pt-4">
+                      <p className="font-bold text-xl">Valor Final da Venda</p>
+                      <div className="text-right">
+                        <p className="font-bold text-3xl text-primary">{formatCurrency(finalTotal)}</p>
+                        {discountAmount > 0 && (
+                          <p className="text-xs font-semibold text-green-600">Desconto: {formatCurrency(discountAmount)}</p>
+                        )}
+                        {discountAmount < 0 && (
+                          <p className="text-xs font-semibold text-amber-600">Acréscimo: {formatCurrency(-discountAmount)}</p>
+                        )}
+                      </div>
                     </div>
                     {showPartialFields && paidAmountNum > 0 && (
                       <>
@@ -589,7 +678,7 @@ export default function Sales() {
                       <div className="flex items-center justify-between text-sm border-t pt-2">
                         <span className="text-muted-foreground">Parcelamento</span>
                         <span className="font-semibold">
-                          {installments}x de {formatCurrency(total / parseInt(installments))}
+                          {installments}x de {formatCurrency(finalTotal / parseInt(installments))}
                         </span>
                       </div>
                     )}
