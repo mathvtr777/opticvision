@@ -545,6 +545,12 @@ export default function Clients() {
                       {client.email && (
                         <p className="text-xs text-muted-foreground mt-1">{client.email}</p>
                       )}
+                      {client.notes && (
+                        <div className="mt-2 text-sm bg-muted/50 p-2 rounded border-l-2 border-primary/50 text-slate-700">
+                          <span className="font-semibold text-xs uppercase text-slate-500 block mb-1">Observações:</span>
+                          {client.notes}
+                        </div>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <Button

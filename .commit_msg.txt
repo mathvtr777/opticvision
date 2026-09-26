@@ -1,4 +1,4 @@
-feat: Exibe Receita Óptica (Grau) na Guia do Laboratório
+feat: Exibe observações do cliente na lista e na guia do laboratório
 
-- A tela de impressão da Guia (`LabGuidePrint.tsx`) agora busca automaticamente a última receita médica vinculada ao cliente.
-- Adicionada uma tabela estruturada apresentando de forma limpa as propriedades de Olho Direito (OD) e Olho Esquerdo (OE): Esférico, Cilíndrico, Eixo e Adição, facilitando a confecção exata no laboratório.
+- Agora a lista de clientes (`Clients.tsx`) exibe as observações salvas de forma destacada diretamente na listagem, sem precisar entrar no modo de edição.
+- As observações do cliente (além das observações da venda e do laboratório) agora também são impressas na Guia de Laboratório (`LabGuidePrint.tsx`), garantindo que qualquer detalhe sobre a lente ou armação chegue ao laboratório.

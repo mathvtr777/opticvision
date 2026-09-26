@@ -194,9 +194,15 @@ export default function LabGuidePrint() {
           </div>
 
           {/* Observações */}
-          {(order.notes || order.lab_notes) && (
+          {(order.notes || order.lab_notes || order.clients?.notes) && (
             <div>
-              <h3 className="font-bold text-slate-800 uppercase text-xs mb-3 border-b pb-1">Observações para o Laboratório</h3>
+              <h3 className="font-bold text-slate-800 uppercase text-xs mb-3 border-b pb-1">Observações</h3>
+              {order.clients?.notes && (
+                <div className="mb-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase">Anotações do Cliente:</p>
+                  <p className="text-sm text-slate-800 whitespace-pre-wrap">{order.clients.notes}</p>
+                </div>
+              )}
               {order.notes && (
                 <div className="mb-2">
                   <p className="text-xs font-semibold text-slate-500 uppercase">Anotações da Venda:</p>
