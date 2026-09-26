@@ -340,7 +340,7 @@ export default function TrackingPage() {
             Atualizar · {lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
           </button>
           <p className="text-xs text-muted-foreground/50">
-            {businessName} · Powered by KiwiFlow
+            {businessName} · Powered by Simply
           </p>
         </div>
 

@@ -81,11 +81,9 @@ export default function Layout({ children }: LayoutProps) {
           {/* Logo */}
           <div className="h-20 flex items-center justify-center px-4 border-b border-sidebar-border">
             <Link to="/dashboard" className="flex items-center justify-center w-full">
-              <img
-                src="/uploads/ChatGPT_Image_12_de_set._de_2026_18_01_37.png"
-                alt="Logo"
-                className="h-16 w-auto max-w-full object-contain"
-              />
+              <span className="text-2xl font-black tracking-tighter text-foreground">
+                Simply
+              </span>
             </Link>
           </div>
 
@@ -152,7 +150,7 @@ export default function Layout({ children }: LayoutProps) {
           
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="w-2 h-2 rounded-full bg-primary shadow-kiwi animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-primary shadow-sm animate-pulse" />
               Sistema online
             </div>
             <Button variant="outline" size="icon" aria-label="Notificações" className="relative rounded-full">

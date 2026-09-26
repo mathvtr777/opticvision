@@ -71,11 +71,9 @@ export default function Auth() {
       <Card className="w-full max-w-md shadow-hard border-border/50">
         <CardHeader className="space-y-3 text-center">
           <div className="mx-auto flex items-center justify-center">
-            <img
-              src="/uploads/ChatGPT_Image_12_de_set._de_2026_18_01_37.png"
-              alt="Logo"
-              className="w-40 h-40 object-contain"
-            />
+            <span className="text-4xl font-black tracking-tighter text-foreground py-6">
+              Simply
+            </span>
           </div>
           <CardDescription className="text-base">
             {isLogin ? "Entre na sua conta" : "Crie sua conta gratuitamente"}
@@ -142,7 +140,7 @@ export default function Auth() {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-gradient-kiwi hover:opacity-90 transition-opacity"
+              className="w-full h-11  transition-opacity"
               disabled={loading}
             >
               {loading ? (

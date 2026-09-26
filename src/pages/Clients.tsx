@@ -230,7 +230,7 @@ export default function Clients() {
               resetAll();
               setShowForm(!showForm);
             }}
-            className="bg-gradient-kiwi hover:opacity-90"
+            className=""
           >
             <Plus className="w-4 h-4 mr-2" />
             Novo Cliente
@@ -493,7 +493,7 @@ export default function Clients() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-gradient-kiwi hover:opacity-90"
+                    className=""
                   >
                     {editingId ? "Atualizar" : "Cadastrar"}
                   </Button>

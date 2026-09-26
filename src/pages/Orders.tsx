@@ -234,7 +234,7 @@ export default function Orders() {
             </p>
           </div>
           <Button
-            className="bg-gradient-kiwi hover:opacity-90 h-11"
+            className=" h-11"
             onClick={() => setShowNewDialog(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -314,7 +314,7 @@ export default function Orders() {
               key={f.key}
               size="sm"
               variant={statusFilter === f.key ? "default" : "outline"}
-              className={statusFilter === f.key ? "bg-gradient-kiwi hover:opacity-90" : ""}
+              className={statusFilter === f.key ? "" : ""}
               onClick={() => setStatusFilter(f.key)}
             >
               {f.label}
@@ -535,7 +535,7 @@ export default function Orders() {
             <Button
               onClick={handleCreateOrder}
               disabled={creatingOrder}
-              className="bg-gradient-kiwi hover:opacity-90"
+              className=""
             >
               {creatingOrder ? "Criando..." : "Criar Pedido"}
             </Button>

@@ -175,7 +175,7 @@ export default function Sellers() {
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openNewDialog} className="gap-2 bg-gradient-kiwi hover:opacity-90">
+              <Button onClick={openNewDialog} className="gap-2 ">
                 <UserPlus className="h-4 w-4" />
                 Novo Vendedor
               </Button>
@@ -221,7 +221,7 @@ export default function Sellers() {
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1 bg-gradient-kiwi hover:opacity-90">
+                  <Button type="submit" className="flex-1 ">
                     {editingSeller ? "Atualizar" : "Cadastrar"}
                   </Button>
                   <Button

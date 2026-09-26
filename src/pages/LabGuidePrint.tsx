@@ -93,7 +93,9 @@ export default function LabGuidePrint() {
         {/* Cabeçalho */}
         <div className="flex justify-between items-center border-b-2 border-slate-800 pb-6 mb-6">
           <div className="flex items-center gap-4">
-            <img src="/uploads/ChatGPT_Image_12_de_set._de_2026_18_01_37.png" alt="Logo" className="h-16 object-contain" />
+            <span className="text-3xl font-black tracking-tighter text-slate-800">
+              Simply
+            </span>
             <div>
               <h1 className="text-2xl font-black uppercase tracking-wider text-slate-800">Guia de Laboratório</h1>
               <p className="text-sm text-slate-600">Pedido #{String(order.order_number).padStart(5, "0")}</p>
@@ -222,7 +224,7 @@ export default function LabGuidePrint() {
         
         {/* Footer */}
         <div className="mt-16 text-center text-xs text-slate-400 border-t pt-4">
-          KiwiFlow ERP — Sistema de Gestão para Óticas • Documento gerado eletronicamente.
+          Simply ERP — Sistema de Gestão para Óticas • Documento gerado eletronicamente.
         </div>
       </div>
 

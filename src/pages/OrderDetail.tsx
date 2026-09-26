@@ -525,7 +525,7 @@ export default function OrderDetail() {
           <div class="row"><span class="label">Pago</span><span>${formatCurrency(paid)}</span></div>
           <div class="row"><span class="label">Pendente</span><span>${formatCurrency(remaining)}</span></div>
         </div>
-        <div class="footer">KiwiFlow ERP — Documento gerado em ${new Date().toLocaleString("pt-BR")}</div>
+        <div class="footer">Simply ERP — Documento gerado em ${new Date().toLocaleString("pt-BR")}</div>
         <script>window.onload=()=>window.print();<\/script>
       </body></html>
     `);
@@ -629,7 +629,7 @@ export default function OrderDetail() {
               <FileText className="w-4 h-4 mr-1.5" /> Gerar PDF
             </Button>
             {!isDelivered && nextStatus && (
-              <Button size="sm" className="bg-gradient-kiwi hover:opacity-90" onClick={() => openStatusDialog(nextStatus)}>
+              <Button size="sm" className="" onClick={() => openStatusDialog(nextStatus)}>
                 <ArrowRight className="w-4 h-4 mr-1.5" /> Avançar Status
               </Button>
             )}
@@ -769,7 +769,7 @@ export default function OrderDetail() {
                       <Textarea value={labForm.lab_notes} onChange={e => setLabForm(f => ({ ...f, lab_notes: e.target.value }))} rows={2} placeholder="Informações relevantes..." />
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={handleSaveLab} disabled={savingLab} className="bg-gradient-kiwi hover:opacity-90">
+                      <Button size="sm" onClick={handleSaveLab} disabled={savingLab} className="">
                         {savingLab ? "Salvando..." : "Salvar"}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => setLabEditMode(false)}>Cancelar</Button>
@@ -868,7 +868,7 @@ export default function OrderDetail() {
                 {!isDelivered && (
                   <div className="flex gap-2 mt-4 pt-4 border-t flex-col">
                     {nextStatus && (
-                      <Button size="sm" className="bg-gradient-kiwi hover:opacity-90 w-full" onClick={() => openStatusDialog(nextStatus)}>
+                      <Button size="sm" className=" w-full" onClick={() => openStatusDialog(nextStatus)}>
                         <ArrowRight className="w-3.5 h-3.5 mr-1" />
                         Avançar para {STATUS_CONFIG[nextStatus]?.label}
                       </Button>
@@ -889,7 +889,7 @@ export default function OrderDetail() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2"><DollarSign className="w-4 h-4 text-primary" />Pagamento</CardTitle>
                   {remaining > 0 && !isDelivered && (
-                    <Button size="sm" className="bg-gradient-kiwi hover:opacity-90" onClick={() => { setPayAmount(remaining.toFixed(2)); setPayDialogOpen(true); }}>
+                    <Button size="sm" className="" onClick={() => { setPayAmount(remaining.toFixed(2)); setPayDialogOpen(true); }}>
                       <DollarSign className="w-3.5 h-3.5 mr-1" /> Registrar
                     </Button>
                   )}
@@ -974,7 +974,7 @@ export default function OrderDetail() {
           )}
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleChangeStatus} disabled={changingStatus} className="bg-gradient-kiwi hover:opacity-90">
+            <Button onClick={handleChangeStatus} disabled={changingStatus} className="">
               {changingStatus ? "Atualizando..." : "Confirmar"}
             </Button>
           </DialogFooter>
@@ -1053,7 +1053,7 @@ export default function OrderDetail() {
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setPayDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleRegisterPayment} disabled={registeringPay} className="bg-gradient-kiwi hover:opacity-90">
+            <Button onClick={handleRegisterPayment} disabled={registeringPay} className="">
               {registeringPay ? "Registrando..." : "Confirmar Pagamento"}
             </Button>
           </DialogFooter>

@@ -576,7 +576,7 @@ export default function Sales() {
                     type="button"
                     onClick={addItem}
                     disabled={!selectedProduct}
-                    className="bg-gradient-kiwi hover:opacity-90"
+                    className=""
                   >
                     <Plus className="w-4 h-4 mr-1" />
                     Adicionar
@@ -691,7 +691,7 @@ export default function Sales() {
           <Button
             type="submit"
             disabled={loading || saleItems.length === 0}
-            className="w-full h-12 bg-gradient-kiwi hover:opacity-90 text-lg"
+            className="w-full h-12  text-lg"
           >
             {loading ? "Registrando..." : "Finalizar Venda"}
           </Button>

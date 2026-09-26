@@ -71,14 +71,14 @@ export default {
         },
       },
       backgroundImage: {
-        'gradient-kiwi': 'var(--gradient-kiwi)',
+        'gradient-simply': 'var(--gradient-simply)',
         'gradient-subtle': 'var(--gradient-subtle)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'medium': 'var(--shadow-medium)',
         'hard': 'var(--shadow-hard)',
-        'kiwi': 'var(--shadow-kiwi)',
+        'simply': 'var(--shadow-sm)',
       },
       borderRadius: {
         lg: "var(--radius)",

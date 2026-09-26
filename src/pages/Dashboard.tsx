@@ -194,7 +194,7 @@ export default function Dashboard() {
                 {chartBars.map((height, index) => (
                   <div key={index} className="flex-1 h-full flex items-end group">
                     <div
-                      className={`w-full rounded-t-md transition-all duration-500 group-hover:opacity-80 ${index === 5 ? "bg-gradient-kiwi shadow-kiwi" : "bg-secondary"}`}
+                      className={`w-full rounded-t-md transition-all duration-500 group-hover:opacity-80 ${index === 5 ? " shadow-sm" : "bg-secondary"}`}
                       style={{ height: `${height}%` }}
                     />
                   </div>
@@ -235,7 +235,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-primary shadow-kiwi animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-primary shadow-sm animate-pulse" />
                   Status operacional
                 </CardTitle>
               </CardHeader>

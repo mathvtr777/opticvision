@@ -316,7 +316,7 @@ export default function PendingPayments() {
                           </Button>
                           <Button
                             size="sm"
-                            className="bg-gradient-kiwi hover:opacity-90"
+                            className=""
                             onClick={() => openRegisterDialog(sale)}
                           >
                             <DollarSign className="w-4 h-4 mr-1" />
@@ -443,7 +443,7 @@ export default function PendingPayments() {
             <Button
               onClick={handleRegisterPayment}
               disabled={registeringPayment}
-              className="bg-gradient-kiwi hover:opacity-90"
+              className=""
             >
               {registeringPayment ? "Registrando..." : "Confirmar Pagamento"}
             </Button>

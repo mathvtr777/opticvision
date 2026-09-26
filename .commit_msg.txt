@@ -1,4 +1,9 @@
-feat: Exibe observações do cliente na lista e na guia do laboratório
+feat: Rebranding completo (KiwiFlow -> Simply) e nova Identidade Visual
 
-- Agora a lista de clientes (`Clients.tsx`) exibe as observações salvas de forma destacada diretamente na listagem, sem precisar entrar no modo de edição.
-- As observações do cliente (além das observações da venda e do laboratório) agora também são impressas na Guia de Laboratório (`LabGuidePrint.tsx`), garantindo que qualquer detalhe sobre a lente ou armação chegue ao laboratório.
+- Remoção global da identidade visual verde/kiwi.
+- Atualização da paleta principal de cores para a estética minimalista: Preto, Branco, Cinza e Azul Discreto (#315B7D).
+- Alteração global dos textos e menções na interface (KiwiFlow / KiwiApp) para Simply.
+- Atualização de tipografia (migração de Manrope para Inter).
+- Substituição de logos em imagem (antigos do ChatGPT) pela tipografia "Simply" formatada (telas de Login, Sidebar e PDF de Guia de Laboratório).
+- Nova identidade de metadados (`index.html`) refletindo "Simply — Gestão para sua ótica".
+- Ajustes de sombras (`shadow-sm`) e remoção de backgrounds de botões antigos para o novo padrão `#111111`.

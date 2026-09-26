@@ -107,7 +107,7 @@ export default function Financial() {
           </div>
           <Button
             onClick={() => setShowForm(!showForm)}
-            className="bg-gradient-kiwi hover:opacity-90"
+            className=""
           >
             <Plus className="w-4 h-4 mr-2" />
             Nova Transação
@@ -225,7 +225,7 @@ export default function Financial() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-gradient-kiwi hover:opacity-90"
+                    className=""
                   >
                     Registrar
                   </Button>

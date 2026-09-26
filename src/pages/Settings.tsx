@@ -107,7 +107,7 @@ export default function Settings() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-gradient-kiwi hover:opacity-90"
+                className=""
               >
                 Salvar Alterações
               </Button>
