@@ -1,4 +1,4 @@
-fix: Retorna a definição da variavel matchDate que causava tela branca
+feat: Exibe Receita Óptica (Grau) na Guia do Laboratório
 
-- A variável `matchDate` havia sido acidentalmente removida no processo de limpeza dos status, gerando um ReferenceError (matchDate is not defined) que quebrava o React ao montar a aba Laboratório.
-- Adicionada de volta a verificação para exibir a lista normalmente.
+- A tela de impressão da Guia (`LabGuidePrint.tsx`) agora busca automaticamente a última receita médica vinculada ao cliente.
+- Adicionada uma tabela estruturada apresentando de forma limpa as propriedades de Olho Direito (OD) e Olho Esquerdo (OE): Esférico, Cilíndrico, Eixo e Adição, facilitando a confecção exata no laboratório.

@@ -9,6 +9,7 @@ export default function LabGuidePrint() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [order, setOrder] = useState<any>(null);
+  const [receita, setReceita] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +31,16 @@ export default function LabGuidePrint() {
       toast.error("Erro ao carregar dados da guia.");
     } else {
       setOrder(data);
+      if (data.client_id) {
+        const { data: recData } = await supabase
+          .from("receitas")
+          .select("*")
+          .eq("cliente_id", data.client_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        setReceita(recData || null);
+      }
     }
     setLoading(false);
   };
@@ -127,9 +138,38 @@ export default function LabGuidePrint() {
             </div>
           </div>
 
-          {/* Dados Ópticos */}
+          {/* Dados Ópticos e Receita */}
           <div>
-            <h3 className="font-bold text-slate-800 uppercase text-xs mb-3 border-b pb-1">Medidas Ópticas</h3>
+            <h3 className="font-bold text-slate-800 uppercase text-xs mb-3 border-b pb-1">Grau (Receita Óptica)</h3>
+            <table className="w-full text-sm border-collapse mb-6">
+              <thead>
+                <tr className="bg-slate-50 text-slate-600">
+                  <th className="border p-2 text-left font-semibold">Olho</th>
+                  <th className="border p-2 text-center font-semibold">Esférico</th>
+                  <th className="border p-2 text-center font-semibold">Cilíndrico</th>
+                  <th className="border p-2 text-center font-semibold">Eixo</th>
+                  <th className="border p-2 text-center font-semibold">Adição</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border p-2 font-medium">Direito (OD)</td>
+                  <td className="border p-2 text-center">{receita?.od_esferico || "—"}</td>
+                  <td className="border p-2 text-center">{receita?.od_cilindrico || "—"}</td>
+                  <td className="border p-2 text-center">{receita?.od_eixo || "—"}</td>
+                  <td className="border p-2 text-center">{receita?.od_adicao || "—"}</td>
+                </tr>
+                <tr>
+                  <td className="border p-2 font-medium">Esquerdo (OE)</td>
+                  <td className="border p-2 text-center">{receita?.oe_esferico || "—"}</td>
+                  <td className="border p-2 text-center">{receita?.oe_cilindrico || "—"}</td>
+                  <td className="border p-2 text-center">{receita?.oe_eixo || "—"}</td>
+                  <td className="border p-2 text-center">{receita?.oe_adicao || "—"}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3 className="font-bold text-slate-800 uppercase text-xs mb-3 border-b pb-1">Medidas</h3>
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-slate-50 text-slate-600">
