@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import StatCard from "@/components/StatCard";
-import { DollarSign, TrendingUp, Package, Users, ShoppingCart, ArrowUpRight, Plus, UserPlus, Boxes, Activity, ChevronRight, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { DollarSign, TrendingUp, Package, Users, ShoppingCart, ArrowUpRight, Plus, UserPlus, Boxes, Activity, ChevronRight, Clock, CheckCircle2, AlertCircle, FlaskConical } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -16,7 +16,9 @@ export default function Dashboard() {
     lowStockProducts: 0,
   });
   const [orderStats, setOrderStats] = useState({
+    awaiting_shipment: 0,
     in_production: 0,
+    received: 0,
     ready: 0,
     late: 0,
   });
@@ -81,7 +83,9 @@ export default function Dashboard() {
 
       if (orders) {
         setOrderStats({
+          awaiting_shipment: orders.filter(o => o.status === "awaiting_shipment").length,
           in_production: orders.filter(o => o.status === "in_production").length,
+          received: orders.filter(o => o.status === "received").length,
           ready: orders.filter(o => o.status === "ready").length,
           late: orders.filter(o =>
             o.estimated_delivery && o.estimated_delivery < today && o.status !== "delivered"
@@ -139,28 +143,63 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* Laboratório Overview */}
+        <div className="pt-2">
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-primary" />
+            Laboratório
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { label: "Aguardando Envio", value: orderStats.awaiting_shipment || 0, status: "awaiting_shipment", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/10 border-blue-200 dark:border-blue-800/50" },
+              { label: "Em Produção", value: orderStats.in_production || 0, status: "in_production", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/50" },
+              { label: "Recebidos", value: orderStats.received || 0, status: "received", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-800/50" },
+            ].map(s => (
+              <div
+                key={s.status}
+                className={`cursor-pointer rounded-lg border p-4 flex items-center justify-between hover:shadow-md transition-all ${s.bg}`}
+                onClick={() => navigate(`/laboratorio?status=${s.status}`)}
+              >
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{s.label}</p>
+                  <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <FlaskConical className={`w-8 h-8 opacity-20 ${s.color}`} />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Orders Overview */}
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            { label: "Pedidos em Produção",    value: orderStats.in_production, status: "in_production", color: "text-amber-600",  bg: "bg-amber-50 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/50" },
-            { label: "Prontos para Retirada",  value: orderStats.ready,         status: "ready",         color: "text-green-600",  bg: "bg-green-50 dark:bg-green-950/10 border-green-200 dark:border-green-800/50" },
-            { label: "Pedidos Atrasados",       value: orderStats.late,          status: "late",          color: "text-red-600",    bg: "bg-red-50 dark:bg-red-950/10 border-red-200 dark:border-red-800/50" },
-          ].map(s => (
-            <div
-              key={s.status}
-              className={`cursor-pointer rounded-lg border p-4 flex items-center justify-between hover:shadow-md transition-all ${s.bg}`}
-              onClick={() => navigate(`/pedidos?status=${s.status}`)}
-            >
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{s.label}</p>
-                <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+        <div className="pt-2">
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <Package className="w-5 h-5 text-primary" />
+            Pedidos na Ótica
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              { label: "Prontos para Retirada", value: orderStats.ready || 0, status: "ready", color: "text-green-600", bg: "bg-green-50 dark:bg-green-950/10 border-green-200 dark:border-green-800/50" },
+              { label: "Pedidos Atrasados", value: orderStats.late || 0, status: "late", color: "text-red-600", bg: "bg-red-50 dark:bg-red-950/10 border-red-200 dark:border-red-800/50" },
+            ].map(s => (
+              <div
+                key={s.status}
+                className={`cursor-pointer rounded-lg border p-4 flex items-center justify-between hover:shadow-md transition-all ${s.bg}`}
+                onClick={() => navigate(`/pedidos?status=${s.status}`)}
+              >
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{s.label}</p>
+                  <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <Package className={`w-8 h-8 opacity-20 ${s.color}`} />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <Package className={`w-8 h-8 opacity-20 ${s.color}`} />
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">

@@ -18,6 +18,7 @@ import {
   Bell,
   ChevronRight,
   Clock,
+  FlaskConical,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: ShoppingCart, label: "Vendas", path: "/sales" },
   { icon: Package, label: "Pedidos", path: "/pedidos" },
+  { icon: FlaskConical, label: "Laboratório", path: "/laboratorio" },
   { icon: Clock, label: "Pagamentos Pendentes", path: "/pending-payments" },
   { icon: Users, label: "Clientes", path: "/clients" },
   { icon: Package2, label: "Produtos", path: "/products" },

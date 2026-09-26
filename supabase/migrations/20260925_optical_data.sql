@@ -19,7 +19,8 @@ ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS pupillary_height_oe NUMERIC,
   ADD COLUMN IF NOT EXISTS lens_type TEXT,
   ADD COLUMN IF NOT EXISTS original_amount NUMERIC,
-  ADD COLUMN IF NOT EXISTS final_amount NUMERIC;
+  ADD COLUMN IF NOT EXISTS final_amount NUMERIC,
+  ADD COLUMN IF NOT EXISTS lab_status TEXT DEFAULT 'awaiting_shipment';
 
 -- 3. Novos campos em SALES
 ALTER TABLE public.sales

@@ -1,10 +1,8 @@
-feat: dados opticos, valor manual da venda e observacoes
+feat: Modulo de Laboratorio e Guia de Producao
 
-- Nova tabela para auditoria de ajuste de preco e novas colunas para dados opticos (clients/orders) e observacoes e descontos (sales).
-- Adicionada a aba de DADOS OPTICOS no cadastro/edicao de Clientes (DNP, Altura Pupilar OD/OE, Tipo de Lente).
-- Refatorado a pagina de Vendas (`Sales.tsx`) para puxar dados opticos automaticamente e passar a orders ao fechar a venda.
-- Inclusao de Observacoes da Venda em `Sales.tsx` (salvas em `sales` e repassadas a `orders`).
-- Implementado recurso para alterar o valor manual calculado da venda: botao "Alterar Valor", substituicao do preco total e repasse ao Financeiro.
-- `OrderDetail.tsx` agora inclui os Dados Opticos no modulo Laboratorio.
-- A Guia do Laboratorio (`handleGeneratePDF` em `OrderDetail`) tambem agora imprime essas novidades visuais e Observacoes da venda de maneira separada.
-- Relatorios (`Reports.tsx`) e Dashboard (`Dashboard.tsx`) naturalmente integrados com o "finalTotal" mantendo consistencia da auditoria.
+- Adicionada nova aba `/laboratorio` no menu principal.
+- Implementado listagem de pedidos no Laboratorio com filtros por status, busca unificada e date range.
+- Novo campo `lab_status` (Aguardando Envio, Enviado ao Lab, Em Producao, Recebido, Finalizado) rastreado no pedido.
+- Atualizado Dashboard para incorporar resumo do Laboratorio (cards clicaveis que redirecionam e aplicam filtro).
+- Nova funcionalidade para preenchimento de `lab_status` na edicao do Pedido (`OrderDetail.tsx`).
+- Modulo de impressao `LabGuidePrint.tsx` que gera layout clean em formato A4, com todos os dados da producao, ocultando elementos administrativos e exibindo corretamente os dados opticos, observacoes e identificacao da otica. Acesso direto pela listagem do Laboratorio atraves do botao "Guia".

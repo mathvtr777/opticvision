@@ -16,6 +16,8 @@ import PendingPayments from "./pages/PendingPayments";
 import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
 import TrackingPage from "./pages/TrackingPage";
+import Laboratory from "./pages/Laboratory";
+import LabGuidePrint from "./pages/LabGuidePrint";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +41,8 @@ const App = () => (
           <Route path="/pending-payments" element={<PendingPayments />} />
           <Route path="/pedidos" element={<Orders />} />
           <Route path="/pedidos/:id" element={<OrderDetail />} />
+          <Route path="/laboratorio" element={<Laboratory />} />
+          <Route path="/guia-laboratorio/:id" element={<LabGuidePrint />} />
           {/* Rota PÚBLICA — não exige login */}
           <Route path="/pedido/:token" element={<TrackingPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
