@@ -17,7 +17,7 @@ import {
   ArrowLeft, Package, CheckCircle2, Clock, Truck, ShoppingBag,
   MessageCircle, FileText, User, Calendar, DollarSign,
   ChevronRight, FlaskConical, Pencil, X, AlertTriangle, History,
-  ArrowRight,
+  ArrowRight, Share2, Copy, Link2, ExternalLink,
 } from "lucide-react";
 import { STATUS_CONFIG } from "./Orders";
 
@@ -82,6 +82,7 @@ interface Order {
   } | null;
   laboratories: { id: string; name: string; phone: string | null } | null;
   order_status_history: StatusHistory[];
+  public_tracking_token: string | null;
 }
 
 const formatCurrency = (v: number) =>
@@ -138,6 +139,12 @@ export default function OrderDetail() {
   const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
   const [registeringDelivery, setRegisteringDelivery] = useState(false);
 
+  // Share / Tracking
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [trackingToken, setTrackingToken] = useState<string | null>(null);
+  const [generatingToken, setGeneratingToken] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     checkAuth();
     loadOrder();
@@ -174,6 +181,7 @@ export default function OrderDetail() {
       return;
     }
     setOrder(data as any);
+    setTrackingToken((data as any).public_tracking_token || null);
     setLabForm({
       laboratory_id: data.laboratory_id || "",
       lab_order_number: data.lab_order_number || "",
@@ -207,6 +215,55 @@ export default function OrderDetail() {
     }
 
     setLoading(false);
+  };
+
+  // ── Generate / get tracking token ─────────────────────────────────────────
+  const generateAndGetToken = async () => {
+    if (!order) return;
+    // Se já existe, abre o modal direto
+    if (trackingToken) { setShareDialogOpen(true); return; }
+    setGeneratingToken(true);
+    try {
+      // Token: 12 chars base36 aleatório — difícil de adivinhar, não sequencial
+      const raw = Array.from(crypto.getRandomValues(new Uint8Array(9)))
+        .map(b => b.toString(36).padStart(2, "0")).join("").slice(0, 12);
+      const { error } = await supabase
+        .from("orders")
+        .update({ public_tracking_token: raw })
+        .eq("id", order.id);
+      if (error) throw error;
+      setTrackingToken(raw);
+      setShareDialogOpen(true);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao gerar link");
+    } finally {
+      setGeneratingToken(false);
+    }
+  };
+
+  const getTrackingUrl = () => `${window.location.origin}/pedido/${trackingToken}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getTrackingUrl());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Fallback: seleciona o campo para cópia manual
+      const el = document.getElementById("tracking-url-input") as HTMLInputElement;
+      el?.select();
+      toast.info("Selecione e copie o link manualmente.");
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!order) return;
+    const phone = order.clients?.phone?.replace(/\D/g, "");
+    if (!phone) { toast.error("Cliente sem telefone cadastrado."); return; }
+    const firstName = order.clients?.name?.split(" ")[0] || "";
+    const url = getTrackingUrl();
+    const msg = `Olá, ${firstName}! 👋\n\nVocê pode acompanhar o andamento do seu pedido de óculos pelo link abaixo:\n\n${url}\n\nEstamos à disposição!`;
+    window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   const loadLabs = async () => {
@@ -533,6 +590,10 @@ export default function OrderDetail() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={generateAndGetToken} disabled={generatingToken}>
+              <Share2 className="w-4 h-4 mr-1.5" />
+              {generatingToken ? "Gerando..." : "Compartilhar"}
+            </Button>
             <Button variant="outline" size="sm" onClick={handleWhatsApp}>
               <MessageCircle className="w-4 h-4 mr-1.5" /> WhatsApp
             </Button>
@@ -929,6 +990,97 @@ export default function OrderDetail() {
             <Button variant="outline" onClick={() => setPayDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleRegisterPayment} disabled={registeringPay} className="bg-gradient-kiwi hover:opacity-90">
               {registeringPay ? "Registrando..." : "Confirmar Pagamento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Share Tracking Dialog ─────────────────────────────────────────── */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-primary" />
+              Compartilhar acompanhamento
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Envie este link para o cliente acompanhar o andamento do pedido em tempo real, sem precisar criar uma conta.
+            </p>
+
+            {/* Link field */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Link de acompanhamento</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="tracking-url-input"
+                  readOnly
+                  value={trackingToken ? getTrackingUrl() : ""}
+                  className="text-xs font-mono bg-muted/40 cursor-text"
+                  onClick={e => (e.target as HTMLInputElement).select()}
+                />
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="flex-shrink-0"
+                  onClick={handleCopyLink}
+                  title="Copiar link"
+                >
+                  {copied
+                    ? <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    : <Copy className="w-4 h-4" />
+                  }
+                </Button>
+              </div>
+              {copied && (
+                <p className="text-xs text-green-600 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Link copiado!
+                </p>
+              )}
+            </div>
+
+            {/* Preview link */}
+            {trackingToken && (
+              <a
+                href={getTrackingUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Visualizar como o cliente verá
+              </a>
+            )}
+
+            {/* Tracking section info */}
+            <div className="rounded-lg border border-border/60 p-3 bg-muted/20 space-y-1">
+              <p className="text-xs font-semibold text-muted-foreground">O cliente verá:</p>
+              <ul className="text-xs text-muted-foreground space-y-0.5 list-none">
+                <li>✓ Primeiro nome e número do pedido</li>
+                <li>✓ Status atual com mensagem amigável</li>
+                <li>✓ Timeline visual de progresso</li>
+                <li>✓ Previsão de entrega (se definida)</li>
+                <li>✓ Botão para falar com a ótica</li>
+                <li>✗ Dados financeiros, receita ou internos</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 flex-col sm:flex-row">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={handleCopyLink}
+            >
+              {copied ? <CheckCircle2 className="w-4 h-4 mr-1.5 text-green-600" /> : <Copy className="w-4 h-4 mr-1.5" />}
+              {copied ? "Copiado!" : "Copiar link"}
+            </Button>
+            <Button
+              className="w-full sm:w-auto bg-[#25D366] hover:bg-[#22c55e] text-white"
+              onClick={handleShareWhatsApp}
+            >
+              <MessageCircle className="w-4 h-4 mr-1.5" />
+              Enviar pelo WhatsApp
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,1 +1,7 @@
-chore: remove arquivo temporario de commit
+feat: adicionar acompanhamento publico do pedido
+
+- Nova migracao SQL para adicionar `public_tracking_token` e policies RLS publicas (sem auth).
+- Nova pagina de acompanhamento publico (`TrackingPage.tsx`), otimizada para mobile e sem dados sensiveis.
+- Rota publica adicionada (`/pedido/:token`) em `App.tsx`.
+- Refatoracao de `OrderDetail.tsx` para incluir botao de compartilhar e logica de geracao de token (12 chars base36) vinculada ao pedido existente.
+- Modal de compartilhamento com possibilidade de copiar link, enviar no WhatsApp e visualizar previa.

@@ -15,6 +15,7 @@ import Settings from "./pages/Settings";
 import PendingPayments from "./pages/PendingPayments";
 import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
+import TrackingPage from "./pages/TrackingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,8 @@ const App = () => (
           <Route path="/pending-payments" element={<PendingPayments />} />
           <Route path="/pedidos" element={<Orders />} />
           <Route path="/pedidos/:id" element={<OrderDetail />} />
+          {/* Rota PÚBLICA — não exige login */}
+          <Route path="/pedido/:token" element={<TrackingPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
