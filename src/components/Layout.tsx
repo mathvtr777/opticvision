@@ -16,31 +16,59 @@ import {
   X,
   UserCog,
   Bell,
-  ChevronRight,
   Clock,
   FlaskConical,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface LayoutProps {
   children: ReactNode;
+  breadcrumb?: string;
 }
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: ShoppingCart, label: "Vendas", path: "/sales" },
-  { icon: Package, label: "Pedidos", path: "/pedidos" },
-  { icon: FlaskConical, label: "Laboratório", path: "/laboratorio" },
-  { icon: Clock, label: "Pagamentos Pendentes", path: "/pending-payments" },
-  { icon: Users, label: "Clientes", path: "/clients" },
-  { icon: Package2, label: "Produtos", path: "/products" },
-  { icon: UserCog, label: "Vendedores", path: "/sellers" },
-  { icon: DollarSign, label: "Financeiro", path: "/financial" },
-  { icon: FileText, label: "Relatórios", path: "/reports" },
-  { icon: Settings, label: "Configurações", path: "/settings" },
+const menuSections = [
+  {
+    title: "Início",
+    items: [
+      { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+    ],
+  },
+  {
+    title: "Operação",
+    items: [
+      { icon: ShoppingCart, label: "Vendas", path: "/sales" },
+      { icon: Package, label: "Pedidos", path: "/pedidos" },
+      { icon: FlaskConical, label: "Laboratório", path: "/laboratorio" },
+    ],
+  },
+  {
+    title: "Gestão",
+    items: [
+      { icon: Users, label: "Clientes", path: "/clients" },
+      { icon: Package2, label: "Produtos", path: "/products" },
+      { icon: UserCog, label: "Vendedores", path: "/sellers" },
+    ],
+  },
+  {
+    title: "Financeiro",
+    items: [
+      { icon: DollarSign, label: "Financeiro", path: "/financial" },
+      { icon: Clock, label: "Pag. Pendentes", path: "/pending-payments" },
+      { icon: FileText, label: "Relatórios", path: "/reports" },
+    ],
+  },
+  {
+    title: "Sistema",
+    items: [
+      { icon: Settings, label: "Configurações", path: "/settings" },
+    ],
+  },
 ];
 
-export default function Layout({ children }: LayoutProps) {
+const allMenuItems = menuSections.flatMap(s => s.items);
+
+export default function Layout({ children, breadcrumb }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
@@ -53,7 +81,6 @@ export default function Layout({ children }: LayoutProps) {
         setSidebarOpen(false);
       }
     };
-    
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -71,58 +98,76 @@ export default function Layout({ children }: LayoutProps) {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const currentPage = allMenuItems.find(i => i.path === location.pathname);
+
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0B0B0B] flex">
       {/* Sidebar */}
       <aside
-        className={`${sidebarOpen ? "w-64" : "w-0"} fixed md:sticky top-0 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 z-40 overflow-hidden`}
+        className={`${sidebarOpen ? "w-60" : "w-0"} fixed md:sticky top-0 h-screen bg-white dark:bg-[#111111] border-r border-[#E8E8E8] dark:border-[#222222] transition-all duration-300 z-40 overflow-hidden flex-shrink-0`}
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
-          <div className="h-20 flex items-center justify-center px-4 border-b border-sidebar-border">
-            <Link to="/dashboard" className="flex items-center justify-center w-full">
-              <span className="text-2xl font-black tracking-tighter text-foreground">
+          <div className="h-[60px] flex items-center px-5 border-b border-[#E8E8E8] dark:border-[#222222]">
+            <Link to="/dashboard" className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-[#111111] dark:bg-white flex items-center justify-center">
+                <span className="text-white dark:text-[#111111] text-xs font-black">S</span>
+              </div>
+              <span className="text-[15px] font-bold tracking-tight text-[#111111] dark:text-white">
                 Simply
               </span>
             </Link>
           </div>
 
-          {/* Menu Items */}
-          <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
-            <p className="px-3 pb-3 text-[10px] font-semibold uppercase text-muted-foreground">Navegação</p>
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.path);
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => isMobile && setSidebarOpen(false)}
-                  className={`group flex items-center gap-3 px-3 py-2.5 rounded-md transition-all ${
-                    active
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground border border-primary/20"
-                      : "text-sidebar-foreground border border-transparent hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="font-medium">{item.label}</span>
-                  {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-                </Link>
-              );
-            })}
+          {/* Nav */}
+          <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-5">
+            {menuSections.map((section) => (
+              <div key={section.title}>
+                <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#aaaaaa] dark:text-[#555555]">
+                  {section.title}
+                </p>
+                <div className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.path);
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => isMobile && setSidebarOpen(false)}
+                        className={`relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-150 group ${
+                          active
+                            ? "bg-[#EAF0F4] dark:bg-[#1a2530] text-[#315B7D] dark:text-[#5F83A0] font-medium"
+                            : "text-[#555555] dark:text-[#888888] hover:bg-[#F5F5F5] dark:hover:bg-[#1a1a1a] hover:text-[#111111] dark:hover:text-white"
+                        }`}
+                      >
+                        {active && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#315B7D] rounded-r-full" />
+                        )}
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${active ? "text-[#315B7D] dark:text-[#5F83A0]" : "text-[#999999] dark:text-[#555555] group-hover:text-[#555555] dark:group-hover:text-[#888888]"}`} />
+                        <span>{item.label}</span>
+                        {active && <ChevronRight className="w-3 h-3 ml-auto opacity-60" />}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
 
-          {/* Logout Button */}
-          <div className="p-3 border-t border-sidebar-border">
-            <Button
+          {/* Footer */}
+          <div className="p-3 border-t border-[#E8E8E8] dark:border-[#222222] space-y-1">
+            <div className="px-2.5 py-2 flex items-center gap-2 text-xs text-[#999999] dark:text-[#555555]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Sistema online
+            </div>
+            <button
               onClick={handleLogout}
-              variant="ghost"
-              className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-[#999999] dark:text-[#555555] hover:bg-[#F5F5F5] dark:hover:bg-[#1a1a1a] hover:text-[#111111] dark:hover:text-white transition-all"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
               <span>Sair</span>
-            </Button>
+            </button>
           </div>
         </div>
       </aside>
@@ -130,33 +175,43 @@ export default function Layout({ children }: LayoutProps) {
       {/* Mobile overlay */}
       {sidebarOpen && isMobile && (
         <div
-          className="fixed inset-0 bg-black/50 z-30"
+          className="fixed inset-0 bg-black/40 z-30 backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Main Content */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-        {/* Header */}
-        <header className="h-16 bg-background/80 backdrop-blur-xl border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-20">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </Button>
-          
+        {/* Topbar */}
+        <header className="h-[60px] bg-white dark:bg-[#111111] border-b border-[#E8E8E8] dark:border-[#222222] flex items-center justify-between px-4 md:px-6 sticky top-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="w-2 h-2 rounded-full bg-primary shadow-sm animate-pulse" />
-              Sistema online
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-[#999999] hover:text-[#111111] dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-[#1a1a1a] transition-all"
+            >
+              {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+            {currentPage && (
+              <div className="hidden sm:flex items-center gap-1.5 text-sm">
+                <span className="text-[#aaaaaa] dark:text-[#555555]">Simply</span>
+                <span className="text-[#aaaaaa] dark:text-[#555555]">/</span>
+                <span className="text-[#111111] dark:text-white font-medium">{currentPage.label}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#aaaaaa] dark:text-[#555555] mr-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Online
             </div>
-            <Button variant="outline" size="icon" aria-label="Notificações" className="relative rounded-full">
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg text-[#999999] hover:text-[#111111] dark:hover:text-white hover:bg-[#F5F5F5] dark:hover:bg-[#1a1a1a] transition-all relative">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary" />
-            </Button>
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#315B7D]" />
+            </button>
+            <div className="w-8 h-8 rounded-full bg-[#111111] dark:bg-white flex items-center justify-center">
+              <span className="text-white dark:text-[#111111] text-xs font-bold">U</span>
+            </div>
           </div>
         </header>
 
@@ -166,20 +221,22 @@ export default function Layout({ children }: LayoutProps) {
         </main>
       </div>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 h-16 bg-background/90 backdrop-blur-xl border-t border-border z-30 grid grid-cols-4 px-2">
-        {menuItems.slice(0, 3).map((item) => {
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 h-16 bg-white dark:bg-[#111111] border-t border-[#E8E8E8] dark:border-[#222222] z-30 grid grid-cols-4 px-2">
+        {allMenuItems.slice(0, 3).map((item) => {
           const Icon = item.icon;
+          const active = isActive(item.path);
           return (
-            <Link key={item.path} to={item.path} className={`flex flex-col items-center justify-center gap-1 text-[10px] ${isActive(item.path) ? "text-primary" : "text-muted-foreground"}`}>
+            <Link key={item.path} to={item.path} className={`flex flex-col items-center justify-center gap-1 text-[10px] transition-colors ${active ? "text-[#315B7D]" : "text-[#aaaaaa]"}`}>
               <Icon className="w-5 h-5" />
               <span>{item.label}</span>
             </Link>
           );
         })}
-        <Button variant="ghost" className="h-full rounded-none flex-col gap-1 text-[10px] text-muted-foreground" onClick={() => setSidebarOpen(true)}>
+        <button className="flex flex-col items-center justify-center gap-1 text-[10px] text-[#aaaaaa]" onClick={() => setSidebarOpen(true)}>
           <Menu className="w-5 h-5" />
           <span>Menu</span>
-        </Button>
+        </button>
       </nav>
     </div>
   );
