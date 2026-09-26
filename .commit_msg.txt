@@ -1,5 +1,4 @@
-refactor: Simplifica listagem do Laboratório e corrige importação de dados óticos na Venda
+fix: Retorna a definição da variavel matchDate que causava tela branca
 
-- Removidos os status específicos do Laboratório (Aguardando Envio, Enviados, etc) da listagem, painéis e filtros, passando a usar o status nativo do pedido.
-- Atualizado o checkout da Venda (`Sales.tsx`) para puxar do banco (`fetch()`) a versão mais recente dos dados óticos do cliente no exato momento de criar o Pedido. Antes, o sistema estava tentando utilizar os dados mantidos no estado da tela de Venda (que ficavam desatualizados se o usuário editasse o cliente em outra aba).
-- Removidas métricas extras de Laboratório no Dashboard.
+- A variável `matchDate` havia sido acidentalmente removida no processo de limpeza dos status, gerando um ReferenceError (matchDate is not defined) que quebrava o React ao montar a aba Laboratório.
+- Adicionada de volta a verificação para exibir a lista normalmente.

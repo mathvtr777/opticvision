@@ -70,6 +70,18 @@ export default function Laboratory() {
         (o.lab_order_number || "").toLowerCase().includes(searchLower) ||
         (o.laboratories?.name || "").toLowerCase().includes(searchLower);
 
+      // Date Range
+      let matchDate = true;
+      if (o.created_at) {
+        const orderDate = new Date(o.created_at.split("T")[0]);
+        if (startDate) {
+          matchDate = matchDate && orderDate >= new Date(startDate);
+        }
+        if (endDate) {
+          matchDate = matchDate && orderDate <= new Date(endDate);
+        }
+      }
+
       return matchSearch && matchDate;
     });
   }, [orders, search, startDate, endDate]);
