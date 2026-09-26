@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import StatCard from "@/components/StatCard";
-import { DollarSign, TrendingUp, Package, Users, ShoppingCart, ArrowUpRight, Plus, UserPlus, Boxes, Activity, ChevronRight } from "lucide-react";
+import { DollarSign, TrendingUp, Package, Users, ShoppingCart, ArrowUpRight, Plus, UserPlus, Boxes, Activity, ChevronRight, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -15,11 +15,17 @@ export default function Dashboard() {
     totalClients: 0,
     lowStockProducts: 0,
   });
+  const [orderStats, setOrderStats] = useState({
+    in_production: 0,
+    ready: 0,
+    late: 0,
+  });
   const chartBars = [38, 54, 46, 68, 58, 88, 72];
 
   useEffect(() => {
     checkAuth();
     loadStats();
+    loadOrderStats();
   }, []);
 
   const checkAuth = async () => {
@@ -66,6 +72,27 @@ export default function Dashboard() {
     });
   };
 
+  const loadOrderStats = async () => {
+    const today = new Date().toISOString().split("T")[0];
+    try {
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("status, estimated_delivery");
+
+      if (orders) {
+        setOrderStats({
+          in_production: orders.filter(o => o.status === "in_production").length,
+          ready: orders.filter(o => o.status === "ready").length,
+          late: orders.filter(o =>
+            o.estimated_delivery && o.estimated_delivery < today && o.status !== "delivered"
+          ).length,
+        });
+      }
+    } catch {
+      // tabela orders pode não existir ainda (migração pendente)
+    }
+  };
+
   return (
     <Layout>
       <div className="max-w-[1500px] mx-auto space-y-6 animate-in fade-in duration-500">
@@ -110,6 +137,30 @@ export default function Dashboard() {
             value={stats.lowStockProducts.toString()}
             icon={Package}
           />
+        </div>
+
+        {/* Orders Overview */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            { label: "Pedidos em Produção",    value: orderStats.in_production, status: "in_production", color: "text-amber-600",  bg: "bg-amber-50 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/50" },
+            { label: "Prontos para Retirada",  value: orderStats.ready,         status: "ready",         color: "text-green-600",  bg: "bg-green-50 dark:bg-green-950/10 border-green-200 dark:border-green-800/50" },
+            { label: "Pedidos Atrasados",       value: orderStats.late,          status: "late",          color: "text-red-600",    bg: "bg-red-50 dark:bg-red-950/10 border-red-200 dark:border-red-800/50" },
+          ].map(s => (
+            <div
+              key={s.status}
+              className={`cursor-pointer rounded-lg border p-4 flex items-center justify-between hover:shadow-md transition-all ${s.bg}`}
+              onClick={() => navigate(`/pedidos?status=${s.status}`)}
+            >
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{s.label}</p>
+                <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <Package className={`w-8 h-8 opacity-20 ${s.color}`} />
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">

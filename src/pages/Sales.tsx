@@ -254,6 +254,33 @@ export default function Sales() {
           .eq("id", clientId);
       }
 
+      // Auto-criar pedido vinculado à venda
+      try {
+        const { data: createdOrder, error: orderErr } = await supabase
+          .from("orders")
+          .insert([{
+            user_id: user.id,
+            sale_id: sale.id,
+            client_id: clientId || null,
+            seller_name: sellerName,
+            status: "sale_created",
+          }])
+          .select("id")
+          .single();
+
+        if (!orderErr && createdOrder) {
+          await supabase.from("order_status_history").insert([{
+            order_id: createdOrder.id,
+            user_id: user.id,
+            status: "sale_created",
+            changed_by: sellerName,
+            notes: "Pedido criado automaticamente na finalização da venda",
+          }]);
+        }
+      } catch {
+        // Pedido não-crítico; a venda já foi salva com sucesso
+      }
+
       if (isPartial) {
         toast.success(
           `Venda registrada! Pago: R$ ${effectivePaid.toFixed(2)} | Pendente: R$ ${(totalAmount - effectivePaid).toFixed(2)}`
