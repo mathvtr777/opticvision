@@ -108,12 +108,12 @@ export default function Layout({ children, breadcrumb }: LayoutProps) {
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
-          <div className="h-[60px] flex items-center px-4 border-b border-[#E8E8E8] dark:border-[#222222]">
+          <div className="h-[80px] flex items-center px-4 border-b border-[#E8E8E8] dark:border-[#222222]">
             <Link to="/dashboard" className="flex items-center">
               <img
                 src="/simply-logo.png"
                 alt="Simply"
-                className="h-10 w-auto object-contain"
+                className="h-16 w-auto object-contain"
                 style={{ mixBlendMode: "multiply" }}
               />
             </Link>
@@ -193,7 +193,7 @@ export default function Layout({ children, breadcrumb }: LayoutProps) {
             </button>
             {currentPage && (
               <div className="hidden sm:flex items-center gap-1.5 text-sm">
-                <img src="/simply-logo.png" alt="Simply" className="h-6 w-auto object-contain" style={{ mixBlendMode: "multiply" }} />
+                <img src="/simply-logo.png" alt="Simply" className="h-8 w-auto object-contain" style={{ mixBlendMode: "multiply" }} />
                 <span className="text-[#aaaaaa] dark:text-[#555555]">/</span>
                 <span className="text-[#111111] dark:text-white font-medium">{currentPage.label}</span>
               </div>
