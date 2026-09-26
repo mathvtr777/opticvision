@@ -35,15 +35,21 @@ export default function Dashboard() {
       .toISOString()
       .split("T")[0];
 
-    const { data: dailySales } = await supabase
-      .from("sales")
-      .select("total_amount")
-      .gte("created_at", today);
+    // Usar financial_transactions para refletir o dinheiro EFETIVAMENTE recebido
+    // (não o total da venda, que pode ter pagamento parcial)
+    const { data: dailyIncome } = await supabase
+      .from("financial_transactions")
+      .select("amount")
+      .eq("type", "income")
+      .eq("category", "Venda")
+      .eq("date", today);
 
-    const { data: monthlySales } = await supabase
-      .from("sales")
-      .select("total_amount")
-      .gte("created_at", firstDayOfMonth);
+    const { data: monthlyIncome } = await supabase
+      .from("financial_transactions")
+      .select("amount")
+      .eq("type", "income")
+      .eq("category", "Venda")
+      .gte("date", firstDayOfMonth);
 
     const { data: clients } = await supabase.from("clients").select("id");
 
@@ -53,8 +59,8 @@ export default function Dashboard() {
       .filter("stock", "lte", "low_stock_alert");
 
     setStats({
-      dailySales: dailySales?.reduce((sum, sale) => sum + Number(sale.total_amount), 0) || 0,
-      monthlySales: monthlySales?.reduce((sum, sale) => sum + Number(sale.total_amount), 0) || 0,
+      dailySales: dailyIncome?.reduce((sum, t) => sum + Number(t.amount), 0) || 0,
+      monthlySales: monthlyIncome?.reduce((sum, t) => sum + Number(t.amount), 0) || 0,
       totalClients: clients?.length || 0,
       lowStockProducts: lowStockProducts?.length || 0,
     });

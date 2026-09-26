@@ -104,6 +104,9 @@ CREATE TABLE IF NOT EXISTS public.sales (
   seller_name TEXT NOT NULL,
   total_amount DECIMAL(10, 2) NOT NULL,
   payment_method TEXT NOT NULL,
+  payment_status TEXT NOT NULL DEFAULT 'paid',
+  paid_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  installments INTEGER DEFAULT NULL,
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -115,6 +118,18 @@ DO $$ BEGIN
     CREATE POLICY "Users can manage own sales" ON public.sales FOR ALL USING (auth.uid() = user_id);
   END IF;
 END $$;
+
+-- Garantir que colunas existam em bancos já criados (retrocompatibilidade)
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'paid';
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10,2) NOT NULL DEFAULT 0;
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS installments INTEGER DEFAULT NULL;
+
+-- Atualizar vendas existentes sem registro de pagamento
+UPDATE public.sales
+  SET payment_status = 'paid',
+      paid_amount = total_amount
+  WHERE paid_amount = 0;
+
 
 -- 7. Tabela: sale_items (Itens de cada venda)
 CREATE TABLE IF NOT EXISTS public.sale_items (
@@ -149,7 +164,47 @@ DO $$ BEGIN
   END IF;
 END $$;
 
--- 8. Tabela: financial_transactions (Entradas e Saídas do Caixa)
+-- 8. Tabela: sale_payments (Recebimentos — múltiplos por venda)
+CREATE TABLE IF NOT EXISTS public.sale_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sale_id UUID NOT NULL REFERENCES public.sales(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
+  payment_method TEXT NOT NULL,
+  payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.sale_payments ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'sale_payments' AND policyname = 'Users can manage own sale_payments'
+  ) THEN
+    CREATE POLICY "Users can manage own sale_payments"
+      ON public.sale_payments FOR ALL
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;
+
+-- Migrar vendas existentes: criar recebimento para cada venda já paga
+INSERT INTO public.sale_payments (sale_id, user_id, amount, payment_method, payment_date, notes)
+SELECT
+  s.id,
+  s.user_id,
+  s.total_amount,
+  s.payment_method,
+  COALESCE(s.created_at::DATE, CURRENT_DATE),
+  'Migração automática - pagamento original'
+FROM public.sales s
+WHERE s.payment_status = 'paid'
+  AND NOT EXISTS (
+    SELECT 1 FROM public.sale_payments sp WHERE sp.sale_id = s.id
+  );
+
+-- 9. Tabela: financial_transactions (Entradas e Saídas do Caixa)
 CREATE TABLE IF NOT EXISTS public.financial_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

@@ -16,6 +16,7 @@ import {
   UserCog,
   Bell,
   ChevronRight,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,6 +27,7 @@ interface LayoutProps {
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: ShoppingCart, label: "Vendas", path: "/sales" },
+  { icon: Clock, label: "Pagamentos Pendentes", path: "/pending-payments" },
   { icon: Users, label: "Clientes", path: "/clients" },
   { icon: Package, label: "Produtos", path: "/products" },
   { icon: UserCog, label: "Vendedores", path: "/sellers" },

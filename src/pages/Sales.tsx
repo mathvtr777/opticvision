@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { Plus, ShoppingCart, Trash2, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface SaleItem {
   product_id: string;
@@ -30,11 +31,36 @@ export default function Sales() {
   const [clientId, setClientId] = useState("");
   const [sellerId, setSellerId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [installments, setInstallments] = useState("1");
+  const [paymentType, setPaymentType] = useState<"full" | "partial">("full");
+  const [paidAmount, setPaidAmount] = useState("");
+
+  const total = saleItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const paidAmountNum = parseFloat(paidAmount) || 0;
+  const remainingAmount = paymentType === "partial" ? Math.max(0, total - paidAmountNum) : 0;
+
+  const showInstallments = paymentMethod === "credit";
+  const showPaymentType = paymentMethod === "cash" || paymentMethod === "pix";
+  const showPartialFields = showPaymentType && paymentType === "partial";
 
   useEffect(() => {
     checkAuth();
     loadData();
   }, []);
+
+  // Sync paidAmount to full amount when switching to full
+  useEffect(() => {
+    if (paymentType === "full") {
+      setPaidAmount(total > 0 ? total.toFixed(2) : "");
+    }
+  }, [paymentType, total]);
+
+  // Reset payment-specific fields when method changes
+  useEffect(() => {
+    setPaymentType("full");
+    setInstallments("1");
+    setPaidAmount(total > 0 ? total.toFixed(2) : "");
+  }, [paymentMethod]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -46,7 +72,7 @@ export default function Sales() {
       .from("products")
       .select("*")
       .order("name");
-    
+
     const { data: clientsData } = await supabase
       .from("clients")
       .select("*")
@@ -106,23 +132,52 @@ export default function Sales() {
     setSaleItems(saleItems.filter((item) => item.product_id !== productId));
   };
 
+  const validatePayment = (): boolean => {
+    if (!sellerId) {
+      toast.error("Selecione um vendedor para continuar.");
+      return false;
+    }
+    if (saleItems.length === 0) {
+      toast.error("Adicione pelo menos um item à venda.");
+      return false;
+    }
+    if (showPartialFields) {
+      if (!paidAmount || paidAmountNum <= 0) {
+        toast.error("Informe o valor pago.");
+        return false;
+      }
+      if (paidAmountNum > total) {
+        toast.error("O valor pago não pode ser maior que o total da venda.");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (saleItems.length === 0) {
-      toast.error("Adicione pelo menos um item à venda");
-      return;
-    }
+    if (!validatePayment()) return;
 
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
-      const totalAmount = saleItems.reduce((sum, item) => sum + item.subtotal, 0);
-      
-      const selectedSeller = sellers.find(s => s.id === sellerId);
+      const totalAmount = total;
+      const effectivePaid = showPartialFields ? paidAmountNum : totalAmount;
+      const isPartial = showPartialFields && paidAmountNum < totalAmount;
+      const paymentStatus = isPartial ? "partial" : "paid";
+
+      const selectedSeller = sellers.find((s) => s.id === sellerId);
       const sellerName = selectedSeller?.name || "";
 
+      // Build payment_method string — include installments for credit
+      let finalPaymentMethod = paymentMethod;
+      if (paymentMethod === "credit" && parseInt(installments) > 1) {
+        finalPaymentMethod = `credit_${installments}x`;
+      }
+
+      // Insert sale
       const { data: sale, error: saleError } = await supabase
         .from("sales")
         .insert([{
@@ -130,13 +185,17 @@ export default function Sales() {
           client_id: clientId || null,
           seller_name: sellerName,
           total_amount: totalAmount,
-          payment_method: paymentMethod,
+          payment_method: finalPaymentMethod,
+          payment_status: paymentStatus,
+          paid_amount: effectivePaid,
+          installments: paymentMethod === "credit" ? parseInt(installments) : null,
         }])
         .select()
         .single();
 
       if (saleError) throw saleError;
 
+      // Insert sale items
       const { error: itemsError } = await supabase.from("sale_items").insert(
         saleItems.map((item) => ({
           sale_id: sale.id,
@@ -147,8 +206,35 @@ export default function Sales() {
           subtotal: item.subtotal,
         }))
       );
-
       if (itemsError) throw itemsError;
+
+      // Register initial payment in sale_payments
+      const today = new Date().toISOString().split("T")[0];
+      const { error: paymentError } = await supabase.from("sale_payments").insert([{
+        sale_id: sale.id,
+        user_id: user.id,
+        amount: effectivePaid,
+        payment_method: paymentMethod,
+        payment_date: today,
+        notes: isPartial ? "Pagamento inicial (parcial)" : "Pagamento total",
+      }]);
+      if (paymentError) throw paymentError;
+
+      // Register in financial_transactions (only effectively received amount)
+      const paymentLabel: Record<string, string> = {
+        cash: "Dinheiro",
+        debit: "Débito",
+        credit: "Crédito",
+        pix: "PIX",
+      };
+      await supabase.from("financial_transactions").insert([{
+        user_id: user.id,
+        type: "income",
+        category: "Venda",
+        amount: effectivePaid,
+        description: `Venda - ${sellerName}${paymentMethod === "credit" ? ` (${installments}x no crédito)` : ""} - ${paymentLabel[paymentMethod] || paymentMethod}${isPartial ? " [Pagamento parcial]" : ""}`,
+        date: today,
+      }]);
 
       // Update product stock
       for (const item of saleItems) {
@@ -159,19 +245,30 @@ export default function Sales() {
           .eq("id", item.product_id);
       }
 
-      // Update client total spent
+      // Update client total spent (only effectively paid amount)
       if (clientId) {
         const client = clients.find((c) => c.id === clientId);
         await supabase
           .from("clients")
-          .update({ total_spent: Number(client.total_spent) + totalAmount })
+          .update({ total_spent: Number(client.total_spent || 0) + effectivePaid })
           .eq("id", clientId);
       }
 
-      toast.success("Venda registrada com sucesso!");
+      if (isPartial) {
+        toast.success(
+          `Venda registrada! Pago: R$ ${effectivePaid.toFixed(2)} | Pendente: R$ ${(totalAmount - effectivePaid).toFixed(2)}`
+        );
+      } else {
+        toast.success("Venda registrada com sucesso!");
+      }
+
       setSaleItems([]);
       setClientId("");
       setSellerId("");
+      setPaymentMethod("cash");
+      setPaymentType("full");
+      setPaidAmount("");
+      setInstallments("1");
       loadData();
     } catch (error: any) {
       toast.error(error.message || "Erro ao registrar venda");
@@ -180,7 +277,8 @@ export default function Sales() {
     }
   };
 
-  const total = saleItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const formatCurrency = (value: number) =>
+    value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
     <Layout>
@@ -194,6 +292,7 @@ export default function Sales() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Informações da Venda */}
           <Card className="border-border/50 shadow-medium">
             <CardHeader>
               <CardTitle>Informações da Venda</CardTitle>
@@ -218,7 +317,7 @@ export default function Sales() {
 
                 <div className="space-y-2">
                   <Label>Vendedor*</Label>
-                  <Select value={sellerId} onValueChange={setSellerId} required>
+                  <Select value={sellerId} onValueChange={setSellerId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o vendedor" />
                     </SelectTrigger>
@@ -233,23 +332,134 @@ export default function Sales() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Forma de Pagamento*</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Dinheiro</SelectItem>
-                    <SelectItem value="debit">Débito</SelectItem>
-                    <SelectItem value="credit">Crédito</SelectItem>
-                    <SelectItem value="pix">PIX</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Forma de Pagamento */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Forma de Pagamento*</Label>
+                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Dinheiro</SelectItem>
+                      <SelectItem value="debit">Débito</SelectItem>
+                      <SelectItem value="credit">Crédito</SelectItem>
+                      <SelectItem value="pix">PIX</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Parcelas — apenas para Crédito */}
+                {showInstallments && (
+                  <div className="space-y-2">
+                    <Label>Quantidade de Parcelas*</Label>
+                    <Select value={installments} onValueChange={setInstallments}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                          <SelectItem key={n} value={String(n)}>
+                            {n}x {n > 1 && total > 0 ? `— R$ ${(total / n).toFixed(2)}/parcela` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {total > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Total: {formatCurrency(total)} em {installments}x de {formatCurrency(total / parseInt(installments))}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Tipo de pagamento — apenas para Dinheiro e PIX */}
+                {showPaymentType && (
+                  <div className="space-y-3">
+                    <Label>Tipo de Pagamento</Label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          value="full"
+                          checked={paymentType === "full"}
+                          onChange={() => setPaymentType("full")}
+                          className="accent-primary"
+                        />
+                        <span className="text-sm font-medium">Pagamento total</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          value="partial"
+                          checked={paymentType === "partial"}
+                          onChange={() => {
+                            setPaymentType("partial");
+                            setPaidAmount("");
+                          }}
+                          className="accent-primary"
+                        />
+                        <span className="text-sm font-medium">Pagamento parcial</span>
+                      </label>
+                    </div>
+
+                    {/* Campos de pagamento parcial */}
+                    {showPartialFields && (
+                      <div className="grid md:grid-cols-3 gap-4 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                        <div className="space-y-2">
+                          <Label htmlFor="valor-total">Valor da Venda</Label>
+                          <div className="relative">
+                            <Input
+                              id="valor-total"
+                              value={total > 0 ? formatCurrency(total) : "R$ 0,00"}
+                              readOnly
+                              className="bg-muted/50 font-bold"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="valor-pago">Valor Pago Agora*</Label>
+                          <Input
+                            id="valor-pago"
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            max={total}
+                            value={paidAmount}
+                            onChange={(e) => setPaidAmount(e.target.value)}
+                            placeholder="0,00"
+                            className="font-bold"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Valor Restante</Label>
+                          <div
+                            className={`flex items-center h-10 px-3 rounded-md border font-bold text-sm ${
+                              remainingAmount > 0
+                                ? "border-amber-300 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30"
+                                : "border-green-300 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/30"
+                            }`}
+                          >
+                            {formatCurrency(remainingAmount)}
+                          </div>
+                        </div>
+                        {paidAmountNum > 0 && remainingAmount > 0 && (
+                          <div className="md:col-span-3 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                            Esta venda será marcada como <strong>Pagamento parcial</strong>. O restante poderá ser registrado em Pagamentos Pendentes.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
 
+          {/* Adicionar Produtos */}
           <Card className="border-border/50 shadow-medium">
             <CardHeader>
               <CardTitle>Adicionar Produtos</CardTitle>
@@ -265,7 +475,7 @@ export default function Sales() {
                     <SelectContent>
                       {products.map((product) => (
                         <SelectItem key={product.id} value={product.id}>
-                          {product.name} - R$ {Number(product.price).toFixed(2)} (Est: {product.stock})
+                          {product.name} — {formatCurrency(Number(product.price))} (Est: {product.stock})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -306,11 +516,11 @@ export default function Sales() {
                       <div className="flex-1">
                         <p className="font-medium">{item.product_name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {item.quantity}x R$ {item.unit_price.toFixed(2)}
+                          {item.quantity}x {formatCurrency(item.unit_price)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <p className="font-bold">R$ {item.subtotal.toFixed(2)}</p>
+                        <p className="font-bold">{formatCurrency(item.subtotal)}</p>
                         <Button
                           type="button"
                           variant="ghost"
@@ -324,9 +534,38 @@ export default function Sales() {
                     </div>
                   ))}
 
-                  <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border-2 border-primary/20">
-                    <p className="font-bold text-lg">Total</p>
-                    <p className="font-bold text-2xl text-primary">R$ {total.toFixed(2)}</p>
+                  {/* Resumo do pagamento */}
+                  <div className="p-4 bg-primary/10 rounded-lg border-2 border-primary/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="font-bold text-lg">Total da Venda</p>
+                      <p className="font-bold text-2xl text-primary">{formatCurrency(total)}</p>
+                    </div>
+                    {showPartialFields && paidAmountNum > 0 && (
+                      <>
+                        <div className="flex items-center justify-between text-sm border-t pt-2">
+                          <span className="text-muted-foreground">Pago agora</span>
+                          <span className="font-semibold text-green-600">{formatCurrency(paidAmountNum)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Restante</span>
+                          <span className="font-semibold text-amber-600">{formatCurrency(remainingAmount)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Status</span>
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                            Pagamento parcial
+                          </Badge>
+                        </div>
+                      </>
+                    )}
+                    {showInstallments && parseInt(installments) > 1 && (
+                      <div className="flex items-center justify-between text-sm border-t pt-2">
+                        <span className="text-muted-foreground">Parcelamento</span>
+                        <span className="font-semibold">
+                          {installments}x de {formatCurrency(total / parseInt(installments))}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -338,7 +577,7 @@ export default function Sales() {
             disabled={loading || saleItems.length === 0}
             className="w-full h-12 bg-gradient-kiwi hover:opacity-90 text-lg"
           >
-            Finalizar Venda
+            {loading ? "Registrando..." : "Finalizar Venda"}
           </Button>
         </form>
       </div>

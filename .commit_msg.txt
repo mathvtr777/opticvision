@@ -1,0 +1,10 @@
+feat: pagamentos parciais, parcelamentos e dashboard financeiro
+
+- Adiciona rota e menu de Pagamentos Pendentes (pending-payments)
+- Corrige Dashboard para usar financial_transactions com recebimentos efetivos
+  em vez de sales.total_amount, garantindo registro correto por data
+- Fix de timezone nas datas do historico de pagamentos
+- Badge de status dinamico no historico (Pago ou Parcial)
+- Adiciona tabela sale_payments e colunas payment_status, paid_amount,
+  installments na tabela sales (migracao retrocompativel)
+- schema_completo.sql atualizado com nova estrutura completa
