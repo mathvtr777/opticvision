@@ -14,14 +14,7 @@ import {
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
-// ── Status configuration (Lab specific) ────────────────────────────────────
-export const LAB_STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  awaiting_shipment: { label: "Aguardando Envio", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400", icon: Clock },
-  sent_to_lab:       { label: "Enviado ao Laboratório", color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400", icon: Truck },
-  in_production:     { label: "Em Produção", color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400", icon: Package },
-  received:          { label: "Recebido", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400", icon: CheckCircle2 },
-  finished:          { label: "Finalizado", color: "bg-slate-100 text-slate-800 dark:bg-slate-800/50 dark:text-slate-300", icon: CheckCircle2 },
-};
+import { STATUS_CONFIG } from "./Orders";
 
 export default function Laboratory() {
   const navigate = useNavigate();
@@ -31,7 +24,6 @@ export default function Laboratory() {
   const [loading, setLoading] = useState(true);
   
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -78,35 +70,9 @@ export default function Laboratory() {
         (o.lab_order_number || "").toLowerCase().includes(searchLower) ||
         (o.laboratories?.name || "").toLowerCase().includes(searchLower);
 
-      // Status
-      const currentLabStatus = o.lab_status || "awaiting_shipment"; // Default fallback
-      const matchStatus = statusFilter === "all" || currentLabStatus === statusFilter;
-
-      // Date Range
-      let matchDate = true;
-      if (o.created_at) {
-        const orderDate = new Date(o.created_at.split("T")[0]);
-        if (startDate) {
-          matchDate = matchDate && orderDate >= new Date(startDate);
-        }
-        if (endDate) {
-          matchDate = matchDate && orderDate <= new Date(endDate);
-        }
-      }
-
-      return matchSearch && matchStatus && matchDate;
+      return matchSearch && matchDate;
     });
-  }, [orders, search, statusFilter, startDate, endDate]);
-
-  const stats = useMemo(() => {
-    return {
-      awaiting_shipment: orders.filter(o => (o.lab_status || "awaiting_shipment") === "awaiting_shipment").length,
-      sent_to_lab: orders.filter(o => o.lab_status === "sent_to_lab").length,
-      in_production: orders.filter(o => o.lab_status === "in_production").length,
-      received: orders.filter(o => o.lab_status === "received").length,
-      finished: orders.filter(o => o.lab_status === "finished").length,
-    };
-  }, [orders]);
+  }, [orders, search, startDate, endDate]);
 
   const formatDate = (d: string | null) => {
     if (!d) return "—";
@@ -124,40 +90,6 @@ export default function Laboratory() {
           <p className="text-muted-foreground mt-1">Gerencie os pedidos e prepare as guias para produção.</p>
         </div>
 
-        {/* Resumo */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
-          <Card className="bg-blue-50 dark:bg-blue-950/10 border-blue-200 dark:border-blue-800/50">
-            <CardContent className="p-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aguardando Envio</p>
-              <p className="text-2xl font-bold mt-1 text-blue-600">{stats.awaiting_shipment}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-indigo-50 dark:bg-indigo-950/10 border-indigo-200 dark:border-indigo-800/50">
-            <CardContent className="p-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Enviados</p>
-              <p className="text-2xl font-bold mt-1 text-indigo-600">{stats.sent_to_lab}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-amber-50 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/50">
-            <CardContent className="p-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Em Produção</p>
-              <p className="text-2xl font-bold mt-1 text-amber-600">{stats.in_production}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-800/50">
-            <CardContent className="p-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recebidos</p>
-              <p className="text-2xl font-bold mt-1 text-emerald-600">{stats.received}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-slate-50 dark:bg-slate-900/10 border-slate-200 dark:border-slate-800/50">
-            <CardContent className="p-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Finalizados</p>
-              <p className="text-2xl font-bold mt-1 text-slate-600">{stats.finished}</p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Filtros */}
         <div className="flex flex-col md:flex-row gap-4 items-end bg-card p-4 rounded-lg border shadow-sm">
           <div className="flex-1 space-y-2 w-full">
@@ -171,18 +103,6 @@ export default function Laboratory() {
                 className="pl-9"
               />
             </div>
-          </div>
-          <div className="space-y-2 w-full md:w-48">
-            <Label>Status Laboratório</Label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(LAB_STATUS_CONFIG).map(([key, cfg]) => (
-                  <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
           <div className="space-y-2 w-full md:w-40">
             <Label>Data inicial</Label>
@@ -225,7 +145,7 @@ export default function Laboratory() {
                   </tr>
                 ) : (
                   filteredOrders.map((order) => {
-                    const st = LAB_STATUS_CONFIG[order.lab_status || "awaiting_shipment"];
+                    const st = STATUS_CONFIG[order.status];
                     return (
                       <tr key={order.id} className="hover:bg-muted/30 transition-colors">
                         <td className="px-4 py-3 font-medium">

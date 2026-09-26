@@ -280,14 +280,14 @@ export default function Sales() {
       try {
         let orderOpticalData = {};
         if (clientId) {
-          const clientData = clients.find((c) => c.id === clientId);
-          if (clientData) {
+          const { data: freshClient } = await supabase.from("clients").select("*").eq("id", clientId).single();
+          if (freshClient) {
             orderOpticalData = {
-              dnp_od: clientData.dnp_od,
-              dnp_oe: clientData.dnp_oe,
-              pupillary_height_od: clientData.pupillary_height_od,
-              pupillary_height_oe: clientData.pupillary_height_oe,
-              lens_type: clientData.lens_type,
+              dnp_od: freshClient.dnp_od,
+              dnp_oe: freshClient.dnp_oe,
+              pupillary_height_od: freshClient.pupillary_height_od,
+              pupillary_height_oe: freshClient.pupillary_height_oe,
+              lens_type: freshClient.lens_type,
             };
           }
         }

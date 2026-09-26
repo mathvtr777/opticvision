@@ -79,13 +79,13 @@ export default function Dashboard() {
     try {
       const { data: orders } = await supabase
         .from("orders")
-        .select("status, lab_status, estimated_delivery");
+        .select("status, estimated_delivery");
 
       if (orders) {
         setOrderStats({
-          awaiting_shipment: orders.filter(o => (o.lab_status || "awaiting_shipment") === "awaiting_shipment").length,
-          in_production: orders.filter(o => o.lab_status === "in_production").length,
-          received: orders.filter(o => o.lab_status === "received").length,
+          awaiting_shipment: orders.filter(o => o.status === "sale_created").length,
+          in_production: orders.filter(o => o.status === "in_production").length,
+          received: orders.filter(o => o.status === "received").length,
           ready: orders.filter(o => o.status === "ready").length,
           late: orders.filter(o =>
             o.estimated_delivery && o.estimated_delivery < today && o.status !== "delivered"
@@ -143,35 +143,6 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Laboratório Overview */}
-        <div className="pt-2">
-          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-primary" />
-            Laboratório
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              { label: "Aguardando Envio", value: orderStats.awaiting_shipment || 0, status: "awaiting_shipment", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/10 border-blue-200 dark:border-blue-800/50" },
-              { label: "Em Produção", value: orderStats.in_production || 0, status: "in_production", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/10 border-amber-200 dark:border-amber-800/50" },
-              { label: "Recebidos", value: orderStats.received || 0, status: "received", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-800/50" },
-            ].map(s => (
-              <div
-                key={s.status}
-                className={`cursor-pointer rounded-lg border p-4 flex items-center justify-between hover:shadow-md transition-all ${s.bg}`}
-                onClick={() => navigate(`/laboratorio?status=${s.status}`)}
-              >
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{s.label}</p>
-                  <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <FlaskConical className={`w-8 h-8 opacity-20 ${s.color}`} />
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Orders Overview */}
         <div className="pt-2">

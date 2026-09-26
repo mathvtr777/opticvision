@@ -195,7 +195,6 @@ export default function OrderDetail() {
       lab_received_date: data.lab_received_date || "",
       lab_notes: data.lab_notes || "",
       estimated_delivery: data.estimated_delivery || "",
-      lab_status: data.lab_status || "awaiting_shipment",
     });
 
     // Load optical prescription (receita) by client
@@ -345,7 +344,6 @@ export default function OrderDetail() {
         lab_received_date: labForm.lab_received_date || null,
         lab_notes: labForm.lab_notes || null,
         estimated_delivery: labForm.estimated_delivery || null,
-        lab_status: labForm.lab_status || 'awaiting_shipment',
       }).eq("id", order.id);
       if (error) throw error;
       toast.success("Informações salvas!");
@@ -746,19 +744,6 @@ export default function OrderDetail() {
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Status do Laboratório</Label>
-                        <Select value={labForm.lab_status} onValueChange={v => setLabForm(f => ({ ...f, lab_status: v }))}>
-                          <SelectTrigger><SelectValue placeholder="Status..." /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="awaiting_shipment">Aguardando Envio</SelectItem>
-                            <SelectItem value="sent_to_lab">Enviado ao Laboratório</SelectItem>
-                            <SelectItem value="in_production">Em Produção</SelectItem>
-                            <SelectItem value="received">Recebido</SelectItem>
-                            <SelectItem value="finished">Finalizado</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1">
                         <Label className="text-xs">N° da ordem no laboratório</Label>
                         <Input value={labForm.lab_order_number} onChange={e => setLabForm(f => ({ ...f, lab_order_number: e.target.value }))} placeholder="Ex: LAB-1234" />
                       </div>
@@ -794,13 +779,6 @@ export default function OrderDetail() {
                   <div className="grid sm:grid-cols-2 gap-3 text-sm">
                     {[
                       ["Laboratório", order.laboratories?.name || "Não informado"],
-                      ["Status Lab", {
-                        awaiting_shipment: "Aguardando Envio",
-                        sent_to_lab: "Enviado ao Lab",
-                        in_production: "Em Produção",
-                        received: "Recebido",
-                        finished: "Finalizado"
-                      }[order.lab_status as keyof typeof LAB_STATUS_CONFIG] || "Aguardando Envio"],
                       ["N° da ordem", order.lab_order_number || "—"],
                       ["Data de envio", formatDate(order.lab_sent_date)],
                       ["Previsão lab.", formatDate(order.lab_estimated_delivery)],

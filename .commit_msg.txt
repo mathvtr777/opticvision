@@ -1,5 +1,5 @@
-fix: Corrige tela em branco no Laboratório e Dashboard status
+refactor: Simplifica listagem do Laboratório e corrige importação de dados óticos na Venda
 
-- Importação do componente `Label` em `Laboratory.tsx` que estava faltando, causando uma quebra de renderização na aba de pesquisa.
-- Tratamento para pedidos sem data de criação em `Laboratory.tsx`.
-- Corrige contagem de pedidos no `Dashboard.tsx` para utilizar e puxar `lab_status` do banco, evitando contagem zerada/incorreta das métricas do laboratório.
+- Removidos os status específicos do Laboratório (Aguardando Envio, Enviados, etc) da listagem, painéis e filtros, passando a usar o status nativo do pedido.
+- Atualizado o checkout da Venda (`Sales.tsx`) para puxar do banco (`fetch()`) a versão mais recente dos dados óticos do cliente no exato momento de criar o Pedido. Antes, o sistema estava tentando utilizar os dados mantidos no estado da tela de Venda (que ficavam desatualizados se o usuário editasse o cliente em outra aba).
+- Removidas métricas extras de Laboratório no Dashboard.
